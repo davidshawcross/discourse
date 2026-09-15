@@ -1,0 +1,1593 @@
+<!doctype html>
+<html data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>AI Product Discourse - Trend Report</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%230b0d12%22/%3E%3Ctext%20x%3D%2216%22%20y%3D%2238%22%20font-family%3D%22Georgia%2C%20%27Times%20New%20Roman%27%2C%20serif%22%20font-weight%3D%22900%22%20font-size%3D%2236%22%20fill%3D%22%237dd3c0%22%20text-anchor%3D%22middle%22%3E%E2%80%9C%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d12;
+    --surface: #14171f;
+    --surface-raised: #1a1e28;
+    --border: #262b38;
+    --ink: #f1efe9;
+    --ink-muted: #a5a19a;
+    --ink-faint: #848795;
+    --accent-theme: #7dd3c0;
+    --accent-concept: #f2b880;
+    --accent-entity: #9db4f5;
+    --accent-prediction: #e8a0c4;
+    --accent-graph: #b8db94;
+    --accent-scatter: #cca8e6;
+    --accent-leaders: #97d8a0;
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Work Sans', -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
+  ::selection { background: var(--accent-theme); color: #0b0d12; }
+
+  /* One focus-visible ring for every interactive element in the app - no
+     component defines its own, so keyboard focus is never silently lost when
+     a new control is added. */
+  a:focus-visible, button:focus-visible, select:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--accent-theme); outline-offset: 2px; border-radius: 4px;
+  }
+  .skip-link {
+    position: absolute; top: -48px; left: 8px; z-index: 100;
+    background: var(--accent-theme); color: #0b0d12; font-family: var(--sans);
+    font-weight: 700; font-size: 13px; padding: 10px 16px; border-radius: 6px;
+    text-decoration: none; transition: top .15s;
+  }
+  .skip-link:focus { top: 8px; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  .mobile-nav-toggle {
+    display: none; position: fixed; top: 12px; left: 12px; z-index: 80;
+    align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border);
+    color: var(--ink); font-family: var(--sans); font-size: 13px; font-weight: 700;
+    border-radius: 8px; padding: 10px 14px; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+  }
+  /* display:none outside the mobile breakpoint on purpose - React renders
+     this whenever mobileNavOpen is true, with no idea whether the viewport is
+     currently narrow enough for that to mean anything. Without this, resizing
+     past 640px (or rotating a tablet) while the mobile nav happens to be open
+     would leave a full-screen invisible click-blocker sitting over the
+     desktop layout. */
+  .mobile-backdrop { display: none; }
+  @media (max-width: 640px) {
+    .mobile-backdrop { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 82; }
+  }
+
+  .sidebar {
+    width: 240px; flex-shrink: 0; background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: sticky; top: 0; height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  .brand { padding: 32px 24px 24px; }
+  .brand-kicker {
+    display: inline-flex; align-items: center; gap: 5px; font-family: var(--sans); font-weight: 700;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-theme);
+    background: none; border: none; padding: 0; margin-bottom: 10px; cursor: pointer;
+    transition: opacity .15s;
+  }
+  .brand-kicker:hover { opacity: 0.75; }
+  .brand-name {
+    font-family: var(--serif); font-weight: 900; font-size: 32px; line-height: 1;
+    letter-spacing: -0.01em; text-transform: uppercase; color: var(--ink); cursor: pointer;
+    transition: color .15s; display: inline-block; background: none; border: none; padding: 0;
+  }
+  .brand-name:hover { color: var(--accent-theme); }
+  .nav-list { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+  .nav-item {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    color: var(--ink-muted); font-family: var(--sans); font-size: 14px; padding: 16px 24px;
+    cursor: pointer; border-left: 2px solid transparent; transition: all .15s;
+  }
+  .nav-item:hover { color: var(--ink); background: var(--surface-raised); }
+  .nav-item.active { color: var(--ink); border-left-color: var(--accent-theme); background: var(--surface-raised); font-weight: 600; }
+  .sidebar-footer { padding: 16px 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--ink-faint); }
+  .sidebar-footer-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px; }
+  .edition-select {
+    width: 100%; background: var(--surface-raised); border: 1px solid var(--border);
+    border-radius: 5px; padding: 12px; color: var(--ink); font-family: var(--sans);
+    font-size: 12px; cursor: pointer;
+  }
+  .edition-select:focus-visible { border-color: var(--accent-theme); }
+  .sidebar-profile { position: relative; display: flex; align-items: center; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sidebar-profile .tooltip-bubble { top: auto; bottom: calc(100% + 8px); right: 12px; }
+  .sidebar-profile-avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; background: var(--accent-theme);
+    color: #0b0d12; display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-weight: 800; font-size: 13px;
+  }
+  .sidebar-profile-name { flex: 1; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink); }
+  .sidebar-profile-settings {
+    background: none; border: none; color: var(--ink-faint); cursor: pointer; padding: 13px;
+    display: flex; align-items: center; justify-content: center; border-radius: 6px;
+    transition: color .15s, background .15s;
+  }
+  .sidebar-profile-settings:hover { color: var(--ink); background: var(--surface-raised); }
+
+  .settings-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 24px 26px; max-width: 480px;
+  }
+  .settings-avatar-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    margin-bottom: 22px; padding-bottom: 22px; border-bottom: 1px solid var(--border);
+  }
+  .settings-identity { display: flex; align-items: center; gap: 14px; }
+  .settings-edit-btn {
+    flex-shrink: 0; background: var(--surface-raised); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 16px; font-family: var(--sans); font-size: 12px;
+    font-weight: 600; color: var(--ink-faint); opacity: 0.55; cursor: not-allowed;
+  }
+  .settings-avatar {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; background: var(--accent-theme);
+    color: #0b0d12; display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-weight: 800; font-size: 19px;
+  }
+  .settings-name { font-family: var(--serif); font-weight: 800; font-size: 16px; color: var(--ink); }
+  .settings-sub { font-size: 13px; color: var(--ink-muted); margin-top: 2px; }
+  .settings-field { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .settings-field:last-child { border-bottom: none; }
+  .settings-label { font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+  .settings-value { font-size: 14px; color: var(--ink); }
+
+  .main { flex: 1; padding: 56px 64px; max-width: 1000px; }
+  .kicker { font-family: var(--sans); font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+  .view-title { font-family: var(--serif); font-weight: 900; font-size: 38px; margin: 0 0 28px; line-height: 1.12; letter-spacing: -0.01em; color: var(--ink); }
+  .section-title { font-family: var(--serif); font-weight: 900; font-size: 19px; margin: 40px 0 14px; line-height: 1.2; letter-spacing: -0.005em; color: var(--ink); }
+  .pullquote {
+    font-family: var(--serif); font-size: 27px; line-height: 1.42; font-weight: 600;
+    color: var(--ink-muted); position: relative; z-index: 0; padding: 10px 0 10px 6px;
+    margin: 0 0 44px; max-width: 720px;
+  }
+  .pullquote::before {
+    content: '\201C'; position: absolute; z-index: -1; left: -20px; top: -25px;
+    font-family: var(--serif); font-weight: 900; font-size: 150px; line-height: 1;
+    color: var(--accent-theme); opacity: 0.22; pointer-events: none;
+  }
+  .pq-mark {
+    background: hsl(165, 55%, 78%); color: #0b0d12; padding: 1px 7px; border-radius: 5px;
+    font-weight: 700; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+
+  .legend { display: flex; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-muted);
+    background: none; border: none; font-family: var(--sans); padding: 4px; border-radius: 4px;
+  }
+  .legend-item.interactive { cursor: pointer; user-select: none; transition: opacity .15s, color .15s; }
+  .legend-item.interactive:hover { color: var(--ink); }
+  /* Non-color cue for the filtered-off state - strikethrough, not just dimmer,
+     so it reads for colorblind/low-vision users too, not just via opacity. */
+  .legend-item.interactive.inactive { opacity: 0.5; text-decoration: line-through; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    /* Bottom padding intentionally larger than the sides - clears the
+       absolutely-positioned .card-avatars stack. Optical allowance, not an
+       off-grid oversight. */
+    padding: 24px 24px 48px; position: relative; transition: border-color .15s, background .15s;
+    min-height: 190px; cursor: pointer;
+  }
+  .card.linked { border-color: var(--accent-theme); background: var(--surface-raised); }
+
+  .stat-bar {
+    display: flex; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; margin-top: 16px;
+  }
+  .stat-bar-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; padding: 22px 12px; background: none; border: none;
+    border-right: 1px solid var(--border);
+    cursor: pointer; transition: background .15s, box-shadow .15s; font-family: var(--sans);
+  }
+  .stat-bar-item:last-child { border-right: none; }
+  .stat-bar-item:first-child { border-radius: 10px 0 0 10px; }
+  .stat-bar-item:last-child { border-radius: 0 10px 10px 0; }
+  .stat-bar-item:hover { background: var(--surface-raised); box-shadow: inset 0 0 0 2px var(--stat-color); }
+  .stat-bar-num { font-family: var(--serif); font-weight: 900; font-size: 32px; line-height: 1; }
+  .stat-bar-label { font-size: 13px; color: var(--ink-muted); }
+  .card.dimmed { opacity: 0.32; }
+  .card-name-row { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; }
+  .card-name { font-family: var(--serif); font-weight: 900; font-size: 19px; margin: 0; padding-right: 48px; line-height: 1.2; }
+  .entity-logo {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; object-fit: cover;
+  }
+  .entity-logo-fallback {
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-weight: 800; font-size: 13px; color: #0b0d12;
+  }
+  .card-desc { font-size: 14px; color: var(--ink-muted); line-height: 1.6; margin: 0 0 16px; }
+
+  .card-relate-btn {
+    position: absolute; top: 6px; right: 6px; width: 40px; height: 40px; z-index: 2;
+    border-radius: 50%; background: var(--surface-raised); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: var(--ink-faint); transition: color .15s, border-color .15s, background .15s;
+  }
+  .card-relate-btn:hover { color: var(--ink); border-color: var(--accent-theme); }
+  /* Active state gets a thicker border on top of the color/fill change, so the
+     toggle reads for colorblind/low-vision users too, not just via hue. */
+  .card-relate-btn.active {
+    color: var(--accent-theme); border-color: var(--accent-theme); border-width: 2px;
+    background: hsla(165, 55%, 55%, 0.14);
+  }
+
+  .tooltip-wrap { display: contents; }
+  .tooltip-bubble {
+    position: absolute; top: 46px; right: 8px; z-index: 6; white-space: nowrap;
+    background: var(--surface-raised); border: 1px solid var(--border); color: var(--ink);
+    font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 6px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.4); pointer-events: none;
+    opacity: 0; transform: translateY(-4px); transition: opacity .12s, transform .12s;
+  }
+  .tooltip-wrap:hover .tooltip-bubble { opacity: 1; transform: translateY(0); }
+
+  .score-stat-bar {
+    display: flex; background: var(--surface-raised); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-bottom: 14px;
+  }
+  .score-stat-bar-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; padding: 10px 8px; border-right: 1px solid var(--border);
+  }
+  .score-stat-bar-item:last-child { border-right: none; }
+  .score-stat-bar-num { font-family: var(--serif); font-weight: 900; font-size: 19px; line-height: 1; }
+  .score-stat-bar-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+
+  .sources-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .source-chip {
+    font-family: var(--sans); font-size: 12px; color: var(--ink-faint); background: var(--surface-raised);
+    border: 1px solid var(--border); border-radius: 5px; padding: 10px 12px; cursor: pointer;
+  }
+  .source-chip:hover { color: var(--ink); border-color: var(--accent-theme); }
+
+  .avatar-img {
+    width: 65px; height: 65px; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--bg); cursor: pointer;
+    transition: transform .15s, border-color .15s;
+  }
+  .avatar-img:hover { transform: translateY(-5px) scale(1.06); z-index: 5; border-color: var(--accent-theme); }
+  .avatar-img.sm { width: 28px; height: 28px; border: 2px solid var(--surface); }
+  /* The stacked-avatar overlap and the 44px hit target are two different
+     boxes now that each avatar is wrapped in a real button - overlap margin
+     lives on the button (layout), sizing stays on the img (visual). */
+  .avatar-btn {
+    background: none; border: none; padding: 8px; margin-left: -19px; cursor: pointer;
+    display: inline-flex; border-radius: 50%; width: 44px; height: 44px;
+    align-items: center; justify-content: center;
+  }
+  .avatar-btn:first-child { margin-left: 0; }
+  .card-avatars { position: absolute; bottom: 4px; right: 4px; display: flex; }
+  .creator-card {
+    display: flex; align-items: center; gap: 14px; cursor: pointer; width: 100%;
+    text-align: left; font-family: inherit;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px; transition: border-color .15s, background .15s;
+  }
+  .creator-card:hover { border-color: var(--accent-theme); background: var(--surface-raised); }
+  .creator-card.compact { padding: 10px 12px; gap: 10px; }
+  .creator-card-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--bg); flex-shrink: 0; }
+  .creator-card-avatar.sm { width: 34px; height: 34px; }
+  .creator-card-name { font-family: var(--serif); font-weight: 900; font-size: 16px; margin: 0; line-height: 1.2; }
+  .creator-card-name.sm { font-size: 14px; }
+  .creator-card-meta { font-size: 13px; color: var(--ink-muted); margin: 3px 0 0; }
+  .creator-card-meta.sm { font-size: 12px; margin-top: 2px; }
+  .creator-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 900px) { .creator-grid { grid-template-columns: repeat(2, 1fr); } }
+  .teaser-row { display: flex; align-items: center; gap: 10px; margin: 0 0 32px; flex-wrap: wrap; }
+  .teaser-avatars { display: flex; }
+  .teaser-avatar {
+    width: 65px; height: 65px; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--bg); position: relative; transition: transform .15s, border-color .15s;
+  }
+  .teaser-avatar:hover { transform: translateY(-5px) scale(1.06); z-index: 5; border-color: var(--accent-theme); }
+  /* Wrapping each avatar in a Tooltip adds a DOM layer, so :first-child on the
+     <img> itself no longer reflects position within .teaser-avatars - these
+     are scoped to the wrapper instead, same fix as the old panel version. */
+  .teaser-avatars .teaser-avatar { margin-left: -20px; }
+  .teaser-avatars .teaser-tooltip-anchor:first-child .teaser-avatar { margin-left: 0; }
+  .teaser-tooltip-anchor { position: relative; display: inline-block; }
+  .teaser-tooltip-anchor .tooltip-bubble {
+    top: calc(100% + 10px); left: 50%; right: auto; bottom: auto;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  .teaser-tooltip-anchor .tooltip-wrap:hover .tooltip-bubble { transform: translateX(-50%) translateY(0); }
+  .teaser-text { font-size: 14px; font-weight: 700; color: var(--accent-leaders); }
+  .teaser-text strong { font-weight: 800; }
+  .teaser-button {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 16px; margin-left: 14px; font-family: var(--sans); font-size: 13px; font-weight: 700;
+    color: var(--ink-muted); cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .teaser-button:hover { border-color: var(--accent-leaders); background: var(--surface-raised); }
+  .section-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 40px 0 14px; }
+
+  .takeaways { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+  .takeaway-item {
+    display: flex; flex-direction: column; align-items: stretch; gap: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 15px 18px; cursor: pointer; text-align: left; width: 100%;
+    font-family: var(--sans); transition: border-color .15s, background .15s;
+  }
+  .takeaway-item:hover { border-color: var(--tk-color); background: var(--surface-raised); }
+  .takeaway-footer { display: flex; align-items: center; gap: 12px; }
+  .takeaway-text { font-size: 14px; color: var(--ink-muted); line-height: 1.5; font-weight: 400; }
+  .tk-hl { font-family: var(--serif); font-weight: 600; }
+  .takeaway-dest {
+    display: flex; align-items: center; font-size: 12px; font-weight: 700;
+    color: var(--tk-color); white-space: nowrap; flex-shrink: 0; margin-left: auto;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 12px; transition: border-color .15s, background .15s;
+  }
+  .takeaway-item:hover .takeaway-dest { border-color: currentColor; background: var(--surface-raised); }
+
+  .toggle-row { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+  .toggle-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--ink-muted);
+    font-size: 12px; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-family: var(--sans);
+  }
+  .toggle-btn:hover { color: var(--ink); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--ink-faint); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--ink-muted); vertical-align: top; }
+  td.name-cell { color: var(--ink); font-weight: 500; font-family: var(--serif); }
+
+  .graph-wrap {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;
+  }
+  .graph-svg-wrap { overflow-x: auto; }
+  .detail-panel {
+    width: 240px; flex-shrink: 0;
+    background: var(--surface-raised); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px; font-size: 13px; box-shadow: 0 8px 20px rgba(0,0,0,.35);
+  }
+  .detail-panel .dp-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .detail-panel .dp-name { font-family: var(--serif); font-weight: 900; font-size: 16px; }
+  .detail-panel .dp-desc { color: var(--ink-muted); line-height: 1.5; }
+  .detail-panel .dp-hint { margin-top: 10px; font-size: 12px; color: var(--ink-faint); font-style: italic; }
+  .dp-link {
+    display: block; width: 100%; margin-top: 12px; padding: 8px 12px; border-radius: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-family: var(--sans); font-size: 12px; font-weight: 700; cursor: pointer; text-align: center;
+    transition: border-color .15s, background .15s;
+  }
+  .dp-link:hover { border-color: currentColor; background: var(--surface-raised); }
+
+  .footer-note { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--ink-faint); line-height: 1.6; }
+
+  /* Report switcher modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 95;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 28px 30px; width: 380px; max-width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  .modal-close {
+    background: none; border: 1px solid var(--border); color: var(--ink-muted); border-radius: 6px;
+    padding: 12px 16px; cursor: pointer; font-family: var(--sans); font-size: 12px; float: right;
+  }
+  .modal-title { font-family: var(--serif); font-weight: 800; font-size: 19px; color: var(--ink); margin: 0 0 10px; }
+  .modal-desc { color: var(--ink-muted); font-size: 14px; line-height: 1.6; margin: 0 0 18px; clear: both; }
+  .modal-select {
+    width: 100%; padding: 10px 12px; border-radius: 6px; background: var(--surface-raised);
+    border: 1px solid var(--border); color: var(--ink); font-family: var(--sans); font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* Drawer - right side pop-out */
+  .drawer-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 90;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 380px; background: var(--surface);
+    border-left: 1px solid var(--border); z-index: 91; padding: 32px 28px;
+    transform: translateX(100%); transition: transform .28s ease; overflow-y: auto;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-close {
+    background: none; border: 1px solid var(--border); color: var(--ink-muted); border-radius: 6px;
+    padding: 12px 16px; cursor: pointer; font-family: var(--sans); font-size: 12px; margin-bottom: 24px;
+  }
+  .drawer-summary {
+    font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--ink-muted);
+    margin: 0 0 22px; padding-bottom: 18px; border-bottom: 1px solid var(--border);
+  }
+  .drawer-summary strong { font-weight: 800; }
+  .drawer-summary-num { color: var(--accent-theme); }
+  .drawer-person-title { font-family: var(--serif); font-weight: 900; font-size: 22px; margin: 0 0 16px; line-height: 1.2; }
+  .drawer-section-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink-faint); margin: 20px 0 12px;
+  }
+  .drawer-show-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .drawer-show-header img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+  .drawer-show-header .show-name { font-family: var(--serif); font-weight: 900; font-size: 16px; }
+  .episode-card { background: var(--surface-raised); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  .episode-card-img { width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 12px; display: block; }
+  .episode-card .ep-title { font-family: var(--serif); font-weight: 700; font-size: 16px; margin: 0 0 8px; line-height: 1.35; }
+  .episode-card .ep-meta { font-size: 12px; color: var(--ink-muted); line-height: 1.8; }
+  .episode-card .ep-meta strong { color: var(--ink); }
+  .ep-links { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; }
+  .episode-card a { color: var(--accent-theme); text-decoration: none; font-size: 12px; }
+  .episode-card a:hover { text-decoration: underline; }
+
+  /* Below 640px the fixed 240px sidebar and 380px drawer both stop fitting
+     the viewport - the sidebar becomes an off-canvas panel toggled by a
+     hamburger button, and the drawer becomes a full-width sheet. Placed last
+     in the sheet so it wins the cascade over every unconditional component
+     rule above (.drawer, .grid, .takeaway-footer, .stat-bar) without needing
+     extra specificity. */
+  @media (max-width: 640px) {
+    .mobile-nav-toggle { display: flex; }
+    .app { display: block; }
+    .sidebar {
+      position: fixed; top: 0; left: 0; z-index: 85; width: 280px; max-width: 85vw;
+      transform: translateX(-100%); transition: transform .25s ease;
+      box-shadow: 0 0 40px rgba(0,0,0,.5);
+    }
+    .sidebar.mobile-open { transform: translateX(0); }
+    .main { padding: 76px 20px 40px; max-width: 100%; }
+    .drawer { width: 100%; }
+    .grid { grid-template-columns: 1fr; }
+    .creator-grid { grid-template-columns: 1fr; }
+    .graph-wrap { flex-direction: column; }
+    .detail-panel { width: 100%; }
+    .stat-bar { flex-wrap: wrap; }
+    .stat-bar-item { flex: 1 1 50%; }
+    .takeaway-footer { flex-wrap: wrap; }
+    .takeaway-dest { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const DATA = {"persona": "a SaaS product leader at an early-stage startup", "show_name": "Lenny's Podcast: Product | Career | Growth", "show_logo": "https://substackcdn.com/feed/podcast/10845/6f98962f26f1b886bac3a845bb7ee00b.jpg", "show_creator": "Lenny Rachitsky", "date_range": "Jul - Sep 2026", "latest_edition": "Sep 2026", "date_start": "2026-07-12", "date_end": "2026-09-08", "episodes": {"How we built Grok Bot in a month | Roman Ugarte (SpaceXAI)": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Roman Ugarte (SpaceXAI)", "published": "Tue, 08 Sep 2026 12:31:49 GMT", "guid": "substack:post:214070217", "episode_url": "https://www.lennysnewsletter.com/p/how-we-built-grok-bot-in-a-month", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/214070217/3483f2b4b11da80edfd1766d944779f8.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/214070217/ea8d4c70157d21c2c868a421b90c8f5a.jpg", "source_type": "podcast"}, "Why companies are becoming a series of loops | Anish Acharya (a16z)": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Anish Acharya (a16z)", "published": "Sun, 06 Sep 2026 12:32:00 GMT", "guid": "substack:post:213044770", "episode_url": "https://www.lennysnewsletter.com/p/why-companies-are-becoming-a-series", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/213044770/3b97202cd424a1dca4955ed3371c9424.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/213044770/3e4299c353ce37c40f555986550f4e60.jpg", "source_type": "podcast"}, "AI\u2019s third era: the rise of persistent AI coworkers | Tara Seshan (Product Lead ChatGPT Work)": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Tara Seshan (Product Lead ChatGPT Work)", "published": "Sun, 30 Aug 2026 12:31:30 GMT", "guid": "substack:post:211586245", "episode_url": "https://www.lennysnewsletter.com/p/ais-third-era-the-rise-of-persistent", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/211586245/57f58f8fc53fc0fa2f864c0923e1517e.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/211586245/25b1ee02fa1c0785096c231b7e3369ed.jpg", "source_type": "podcast"}, "How to close $100K+ enterprise deals, step by step | Jen Abel": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Jen Abel", "published": "Sun, 23 Aug 2026 12:31:43 GMT", "guid": "substack:post:211488420", "episode_url": "https://www.lennysnewsletter.com/p/how-to-close-100k-1m-deals-step-by", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/211488420/7df0a97cc37a6e391091a046a0020be4.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/211488420/1097a7ad3699f52d1843fee78e35727e.jpg", "source_type": "podcast"}, "OpenAI\u2019s Head of Design: This is the best time in history to be a designer | Ian Silber": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Ian Silber", "published": "Sun, 16 Aug 2026 12:31:42 GMT", "guid": "substack:post:209801560", "episode_url": "https://www.lennysnewsletter.com/p/openais-head-of-design-this-is-the", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/209801560/1589890f151cd7ce7e85e635c505cb7c.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/209801560/9b2eb1d2408773ba174dfa7943a59083.jpg", "source_type": "podcast"}, "The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Adam Ward, Head of Talent at Cursor", "published": "Sun, 09 Aug 2026 12:31:29 GMT", "guid": "substack:post:209025209", "episode_url": "https://www.lennysnewsletter.com/p/the-playbook-for-building-high-talent", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/209025209/45562fc44d5741e1425f33e139fe9493.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/209025209/3db97a3cc516ce317389ca314c5bc7d1.jpg", "source_type": "podcast"}, "This CPO regrets that product management exists | Tom Verrilli (CPO of Whatnot)": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Tom Verrilli (CPO of Whatnot)", "published": "Sun, 02 Aug 2026 12:32:02 GMT", "guid": "substack:post:209025231", "episode_url": "https://www.lennysnewsletter.com/p/this-cpo-regrets-that-product-management", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/209025231/702fecd1ae63276633753e2cc9356073.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/209025231/99f0d6efed7b33fb19034894f3a04aa6.jpg", "source_type": "podcast"}, "Anthropic\u2019s first technical PM on token maxing, the jagged edge, and living in the future | Dianne Penn": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Dianne Penn", "published": "Sun, 26 Jul 2026 12:32:06 GMT", "guid": "substack:post:207214207", "episode_url": "https://www.lennysnewsletter.com/p/anthropics-first-technical-pm-on", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/207214207/aaa7067cd960f0369661f0976cbe3d0a.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/207214207/756e556fcbda393739f83e6d27dbbe52.jpg", "source_type": "podcast"}, "Why Netflix is betting on systems thinkers\u2014not specialists\u2014in the AI era | Elizabeth Stone (CPTO)": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Elizabeth Stone (CPTO)", "published": "Sun, 19 Jul 2026 12:31:21 GMT", "guid": "substack:post:205675851", "episode_url": "https://www.lennysnewsletter.com/p/netflix-cpto-on-ai-and-the-future", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/205675851/497b10441135a842dbe35a6891de72bb.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/205675851/32acf1b404725989009503ae7ebd1c79.jpg", "source_type": "podcast"}, "How tech workers actually feel about AI in 2026 | Annual AI sentiment survey (Noam Segal)": {"show": "Lenny's Podcast: Product | Career | Growth", "speaker": "Annual AI sentiment survey (Noam Segal)", "published": "Sun, 12 Jul 2026 12:32:14 GMT", "guid": "substack:post:205673536", "episode_url": "https://www.lennysnewsletter.com/p/how-tech-workers-actually-feel-about", "mp3_url": "https://pscrb.fm/rss/p/api.substack.com/feed/podcast/205673536/858a4d7ec0a2ab1461d7d30b989cc671.mp3", "episode_image": "https://substackcdn.com/feed/podcast/10845/post/205673536/429669b27067b8ed03662cec3acb6454.jpg", "source_type": "podcast"}}, "nodes": [{"name": "Moats are discovered, not planned", "type": "theme", "relevance": 88, "hype": 58, "episodes": ["How we built Grok Bot in a month | Roman Ugarte (SpaceXAI)", "Why companies are becoming a series of loops | Anish Acharya (a16z)"], "context": "Two unrelated speakers (SpaceXAI's Roman Ugarte and a16z's Anish Acharya) independently landed on the same claim: durable advantage comes from obsessively shipping what's about to be trivial, not from planning a defensibility strategy upfront. Worth noting because it's converging from a founder/operator angle and a VC/investor angle at the same time - not one person's pet theory."}, {"name": "Systems thinking as the top hiring signal", "type": "theme", "relevance": 79, "hype": 68, "episodes": ["Why Netflix is betting on systems thinkers\u2014not specialists\u2014in the AI era | Elizabeth Stone (CPTO)", "The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor", "This CPO regrets that product management exists | Tom Verrilli (CPO of Whatnot)"], "context": "Three separate speakers (Netflix, Cursor, Whatnot) all cite the ability to zoom out from a task to the underlying structure as the scarcest, most-valued trait right now - one episode literally name-checks another's framing of it. As AI compresses execution time, judging *what* to build outranks *how fast* you can build it."}, {"name": "Fewer, senior generalists over many junior specialists", "type": "theme", "relevance": 91, "hype": 47, "episodes": ["This CPO regrets that product management exists | Tom Verrilli (CPO of Whatnot)", "Why Netflix is betting on systems thinkers\u2014not specialists\u2014in the AI era | Elizabeth Stone (CPTO)", "The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor"], "context": "A real organizational-design shift showing up across three different company sizes and industries: one senior generalist who can pull their own data and touch the codebase is increasingly valued over a team of narrow specialists. Directly actionable for a startup deciding its next few hires."}, {"name": "Human judgment as the durable differentiator", "type": "theme", "relevance": 74, "hype": 32, "episodes": ["Anthropic\u2019s first technical PM on token maxing, the jagged edge, and living in the future | Dianne Penn", "OpenAI\u2019s Head of Design: This is the best time in history to be a designer | Ian Silber", "AI\u2019s third era: the rise of persistent AI coworkers | Tara Seshan (Product Lead ChatGPT Work)", "Why Netflix is betting on systems thinkers\u2014not specialists\u2014in the AI era | Elizabeth Stone (CPTO)"], "context": "The single most-repeated idea in this batch of episodes, in different words each time: taste, accountability, and point-of-view are what AI hasn't automated. Low hype specifically because it's become a truism repeated so often it risks being tuned out - the value is in the specific, harder claim each speaker makes about *where* judgment still bites, not the restated headline."}, {"name": "Build separate vs. merge into one surface", "type": "theme", "relevance": 85, "hype": 61, "episodes": ["How we built Grok Bot in a month | Roman Ugarte (SpaceXAI)", "AI\u2019s third era: the rise of persistent AI coworkers | Tara Seshan (Product Lead ChatGPT Work)"], "context": "A genuine strategic tension, not a convergence: SpaceXAI built Grok Bot as a fully separate product from Cursor specifically to avoid 'shipping your org chart,' while OpenAI's stated long-term goal is the opposite - merging chat/work/coding into one surface entirely. Two credible teams making opposite architecture bets is more useful to a startup PM than either take alone."}, {"name": "AI is raising workload, not just easing it", "type": "theme", "relevance": 77, "hype": 44, "episodes": ["How tech workers actually feel about AI in 2026 | Annual AI sentiment survey (Noam Segal)", "Anthropic\u2019s first technical PM on token maxing, the jagged edge, and living in the future | Dianne Penn"], "context": "Burnout rose from 44.7% to 54.7% year-over-year in the same period AI shipping speed increased - the top fear isn't job loss, it's being expected to do more for the same pay. Directly relevant to a startup leader setting pace and expectations for a small team."}, {"name": "Evals as the new PRD", "type": "theme", "relevance": 81, "hype": 55, "episodes": ["Anthropic\u2019s first technical PM on token maxing, the jagged edge, and living in the future | Dianne Penn"], "context": "Anthropic's internal mantra: user value now gets driven by building eval sets from real failure transcripts rather than writing traditional product requirement docs. A concrete, adoptable practice for any team shipping AI features, not just a frontier lab."}, {"name": "Capability overhang", "type": "theme", "relevance": 76, "hype": 65, "episodes": ["AI\u2019s third era: the rise of persistent AI coworkers | Tara Seshan (Product Lead ChatGPT Work)", "OpenAI\u2019s Head of Design: This is the best time in history to be a designer | Ian Silber"], "context": "Named independently by two OpenAI product leads in separate episodes: most users only tap a sliver of what current models can already do. The gap between model capability and what's actually built/used is framed as the real opportunity, not further capability gains."}, {"name": "Procurement and services as an under-discussed deal lever", "type": "theme", "relevance": 87, "hype": 26, "episodes": ["How to close $100K+ enterprise deals, step by step | Jen Abel"], "context": "Jen Abel's enterprise-sales episode makes a business-model point almost nothing else in this batch touches: services revenue isn't a deviation from 'real' SaaS, it's an accepted and often necessary line item for closing complex or less-mature deals, and procurement gets more blame for stalled deals than it deserves - a direct challenge to the ARR-only mental model most SaaS operators default to."}, {"name": "Product-marketing fit before product-market fit", "type": "concept", "relevance": 73, "hype": 41, "episodes": ["AI\u2019s third era: the rise of persistent AI coworkers | Tara Seshan (Product Lead ChatGPT Work)"], "context": "A Sutter Hill lesson: testing narrative and positioning with many prospects can precede and inform the actual product build, not just follow it. Useful reframe for an early-stage team tempted to build before they've validated the story."}, {"name": "Colleague-pilled product philosophy", "type": "concept", "relevance": 89, "hype": 57, "episodes": ["How we built Grok Bot in a month | Roman Ugarte (SpaceXAI)"], "context": "Resolve ambiguous product debates by asking 'what would you want from a human teammate?' instead of typical SaaS feature-tradeoff thinking. A concrete decision heuristic, not just a vibe - directly portable to any team building agentic features."}, {"name": "100% task completion vs. 90%", "type": "concept", "relevance": 93, "hype": 46, "episodes": ["How we built Grok Bot in a month | Roman Ugarte (SpaceXAI)"], "context": "An agent that fully completes a delegated task feels categorically different from one that gets 90% there, because partial trust still requires the human to stay mentally engaged and check the work. A sharp, testable design bar for any AI feature claiming to 'save time.'"}, {"name": "Loops as the new unit of company building", "type": "concept", "relevance": 66, "hype": 71, "episodes": ["Why companies are becoming a series of loops | Anish Acharya (a16z)"], "context": "Work decomposing into agent-run input-action-output loops per person, per function, eventually per business unit - with humans setting direction and handling exceptions. A framing that's spreading fast in VC/builder circles right now, worth knowing even if the vocabulary itself doesn't stick."}, {"name": "Pincer model (enterprise sales)", "type": "concept", "relevance": 52, "hype": 22, "episodes": ["How to close $100K+ enterprise deals, step by step | Jen Abel"], "context": "Target the top executive via founder outreach and the N-1 report via a salesperson simultaneously, so the meeting gets triangulated from both directions. A concrete, testable enterprise GTM tactic for a startup's first big deals."}, {"name": "Talent density as a team property, not an individual one", "type": "concept", "relevance": 78, "hype": 35, "episodes": ["The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor"], "context": "Talent density is framed as a ratio, not an attribute - a 10x person is throttled without a strong, complementary team around them. A useful corrective for founders who over-index on individual star hires."}, {"name": "Cursor", "type": "entity", "relevance": 90, "hype": 82, "domain": "cursor.com", "episodes": ["How we built Grok Bot in a month | Roman Ugarte (SpaceXAI)", "The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor", "Why companies are becoming a series of loops | Anish Acharya (a16z)"], "context": "Comes up in three unrelated episodes - as SpaceXAI's coding product, as the employer running an unusually deliberate hiring operation, and as a VC's example of a moat discovered (not designed) through engagement and proprietary models. Wikipedia: 1,244 views in the last 7 days (-5.2% vs. the prior week) but +38.9% over the last 30 days - a real, if uneven, growth curve, not a one-week spike. Cursor (made by Anysphere) was already one of the fastest-revenue-growth software companies on record prior to this cutoff, and had popularized the term 'vibe coding' - this momentum reads as continuation of a known trajectory, not a new story."}, {"name": "Anthropic", "type": "entity", "relevance": 80, "hype": 84, "domain": "anthropic.com", "episodes": ["Anthropic\u2019s first technical PM on token maxing, the jagged edge, and living in the future | Dianne Penn", "The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor", "This CPO regrets that product management exists | Tom Verrilli (CPO of Whatnot)"], "context": "Appears as both subject (an internal PM's account of its product culture) and reference point (a competing employer poaching talent; a place where former CTOs now work as ICs). Wikipedia: 55,639 views in the last 7 days, +27.3% week-over-week and still up 2.4% over the last 30 days - sustained real-world attention. Founded in 2021 by former OpenAI safety researchers, built its public identity around AI-safety positioning (Constitutional AI, its published 'model constitution'), and had already drawn very large investment from Google and Amazon before this cutoff - a lab whose profile was rising well before this batch of episodes."}, {"name": "OpenAI", "type": "entity", "relevance": 75, "hype": 96, "domain": "openai.com", "episodes": ["AI\u2019s third era: the rise of persistent AI coworkers | Tara Seshan (Product Lead ChatGPT Work)", "OpenAI\u2019s Head of Design: This is the best time in history to be a designer | Ian Silber"], "context": "Two separate OpenAI product leads (ChatGPT Work and design) in this batch, describing the same company from different functional angles. Wikipedia: 67,231 views in the last 7 days, a striking +68.3% week-over-week - the sharpest real growth signal of anything checked here. This is happening on an already-enormous base - ChatGPT has been the default mainstream entry point to AI since its 2022 launch - so a spike this size on top of existing massive attention is an unusual signal, not just baseline interest compounding."}, {"name": "Claude Code", "type": "entity", "relevance": 69, "hype": 38, "domain": "claude.com", "episodes": ["Anthropic\u2019s first technical PM on token maxing, the jagged edge, and living in the future | Dianne Penn", "This CPO regrets that product management exists | Tom Verrilli (CPO of Whatnot)", "Why Netflix is betting on systems thinkers\u2014not specialists\u2014in the AI era | Elizabeth Stone (CPTO)"], "context": "Referenced across three episodes as the product that made frontier-model adoption tangible, and as the tool non-engineer PMs now use to read and write production code directly. Wikipedia: only 492 views in the last 7 days, +10.6% week-over-week but -10.3% over 30 days - real interest, but much smaller and choppier than how often it comes up here would suggest."}, {"name": "Netflix", "type": "entity", "relevance": 48, "hype": 19, "domain": "netflix.com", "episodes": ["Why Netflix is betting on systems thinkers\u2014not specialists\u2014in the AI era | Elizabeth Stone (CPTO)"], "context": "Netflix's hiring and systems-thinking practices are the case study here. Wikipedia: 41,234 weekly views, essentially flat (+0.1%) and down 11.3% over 30 days - unsurprising, since Netflix's search traffic is driven by its entertainment catalog, not its engineering practices. The 'Netflix Prize' is real and well documented: a genuine $1M competition Netflix ran in the mid-2000s to improve its recommendation algorithm, giving the company a real two-decade ML pedigree."}, {"name": "SpaceX / SpaceXAI", "type": "entity", "relevance": 35, "hype": 53, "domain": "spacex.com", "episodes": ["How we built Grok Bot in a month | Roman Ugarte (SpaceXAI)", "The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor"], "context": "The parent org behind Cursor and Grok Bot, and (separately) the literal rocket company whose data centers Cursor now trains on. Lower relevance for this reader specifically - infrastructure-scale, hardware-adjacent stories like this are the kind the persona brief explicitly says matter less unless there's a direct product implication, and here there mostly isn't one. Knowledge-cutoff caveat: this corpus's framing of a merged 'SpaceXAI' running Cursor and Grok Bot describes organizational events past this cutoff and can't be independently corroborated the way the other entities above can - reported here as the corpus presents it, not as independently verified."}, {"name": "Whatnot", "type": "entity", "relevance": 71, "hype": 33, "domain": "whatnot.com", "episodes": ["This CPO regrets that product management exists | Tom Verrilli (CPO of Whatnot)"], "context": "Live-shopping marketplace whose CPO built an unusually deliberate anti-PM-bloat culture - directly relevant organizational-design case study for an early-stage SaaS team deciding when (and whether) to hire dedicated PMs at all. Already a recognized fast-growing player in the live/social commerce space (collectibles and resale in particular) prior to this cutoff, which lends real credibility to its stated growth rather than asking the reader to take it purely on faith."}, {"name": "Granola", "type": "entity", "relevance": 54, "hype": 49, "domain": "granola.ai", "episodes": ["The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor", "Why companies are becoming a series of loops | Anish Acharya (a16z)"], "context": "An AI notetaking product praised independently by two speakers for product craft and fast growth despite lacking an obvious defensibility story - a small but real cross-episode signal that craft alone can carry a product a long way right now. Consistent with its already-strong reputation for design polish in the AI-notetaking category prior to this cutoff."}, {"name": "Token costs collapse by 2028", "type": "prediction", "relevance": 58, "hype": 43, "episodes": ["Anthropic\u2019s first technical PM on token maxing, the jagged edge, and living in the future | Dianne Penn"], "context": "Heavy token spend today previews the default, cheap way everyone will work by 2028 - an argument for over-investing in AI-native workflows now rather than waiting for costs to fall."}, {"name": "Every recruiter becomes a talent engineer", "type": "prediction", "relevance": 55, "hype": 31, "episodes": ["The playbook for building high-talent-density teams | Adam Ward, Head of Talent at Cursor"], "context": "Recruiting functions increasingly build their own tooling with AI/coding tools rather than depending on engineering support - mirrors the rise of go-to-market engineers as a broader pattern of non-engineers building real software."}, {"name": "Sales stays human despite AI", "type": "prediction", "relevance": 67, "hype": 24, "episodes": ["How to close $100K+ enterprise deals, step by step | Jen Abel"], "context": "Enterprise sales depends on reading people, vibe, and improvisation that resists scripting or automation - a useful counter-narrative for a startup wondering whether to automate its own sales motion too early."}, {"name": "PM core skills become the scarce differentiator", "type": "prediction", "relevance": 83, "hype": 45, "episodes": ["This CPO regrets that product management exists | Tom Verrilli (CPO of Whatnot)"], "context": "As AI removes execution friction, understanding customer, tech, and business - not alignment-driving or storytelling ('PM theater') - becomes the durable, scarce skill worth hiring and promoting for."}, {"name": "One unified product for work and personal", "type": "prediction", "relevance": 70, "hype": 48, "episodes": ["How we built Grok Bot in a month | Roman Ugarte (SpaceXAI)", "AI\u2019s third era: the rise of persistent AI coworkers | Tara Seshan (Product Lead ChatGPT Work)"], "context": "Despite separate work/personal contexts today, both Grok Bot's roadmap and OpenAI's own point toward one bot/assistant form factor eventually serving both domains rather than splitting into two products."}, {"name": "Services line items will keep growing", "type": "prediction", "relevance": 82, "hype": 21, "episodes": ["How to close $100K+ enterprise deals, step by step | Jen Abel"], "context": "The corollary to the services-and-procurement point above: don't expect services revenue to be a phase SaaS grows out of. As deal complexity rises, services stays a legitimate and growing enterprise budget line vendors should be willing to sell into, not something to resist on ARR-purity principle."}], "edges": [{"source": "Moats are discovered, not planned", "target": "Build separate vs. merge into one surface", "weight": 1}, {"source": "Moats are discovered, not planned", "target": "Colleague-pilled product philosophy", "weight": 1}, {"source": "Moats are discovered, not planned", "target": "100% task completion vs. 90%", "weight": 1}, {"source": "Moats are discovered, not planned", "target": "Loops as the new unit of company building", "weight": 1}, {"source": "Moats are discovered, not planned", "target": "Cursor", "weight": 2}, {"source": "Moats are discovered, not planned", "target": "SpaceX / SpaceXAI", "weight": 1}, {"source": "Moats are discovered, not planned", "target": "Granola", "weight": 1}, {"source": "Moats are discovered, not planned", "target": "One unified product for work and personal", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "Fewer, senior generalists over many junior specialists", "weight": 3}, {"source": "Systems thinking as the top hiring signal", "target": "Human judgment as the durable differentiator", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "Talent density as a team property, not an individual one", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "Cursor", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "Anthropic", "weight": 2}, {"source": "Systems thinking as the top hiring signal", "target": "Claude Code", "weight": 2}, {"source": "Systems thinking as the top hiring signal", "target": "Netflix", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "SpaceX / SpaceXAI", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "Whatnot", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "Granola", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "Every recruiter becomes a talent engineer", "weight": 1}, {"source": "Systems thinking as the top hiring signal", "target": "PM core skills become the scarce differentiator", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Human judgment as the durable differentiator", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Talent density as a team property, not an individual one", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Cursor", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Anthropic", "weight": 2}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Claude Code", "weight": 2}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Netflix", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "SpaceX / SpaceXAI", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Whatnot", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Granola", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "Every recruiter becomes a talent engineer", "weight": 1}, {"source": "Fewer, senior generalists over many junior specialists", "target": "PM core skills become the scarce differentiator", "weight": 1}, {"source": "Human judgment as the durable differentiator", "target": "Build separate vs. merge into one surface", "weight": 1}, {"source": "Human judgment as the durable differentiator", "target": "AI is raising workload, not just easing it", "weight": 1}, {"source": "Human judgment as the durable differentiator", "target": "Evals as the new PRD", "weight": 1}, {"source": "Human judgment as the durable differentiator", "target": "Capability overhang", "weight": 2}, {"source": "Human judgment as the durable differentiator", "target": "Product-marketing fit before product-market fit", "weight": 1}, {"source": "Human judgment as the durable differentiator", "target": "Anthropic", "weight": 1}, {"source": "Human judgment as the durable differentiator", "target": "OpenAI", "weight": 2}, {"source": "Human judgment as the durable differentiator", "target": "Claude Code", "weight": 2}, {"source": "Human judgment as the durable differentiator", "target": "Netflix", "weight": 1}, {"source": "Human judgment as the durable differentiator", "target": "Token costs collapse by 2028", "weight": 1}, {"source": "Human judgment as the durable differentiator", "target": "One unified product for work and personal", "weight": 1}, {"source": "Build separate vs. merge into one surface", "target": "Capability overhang", "weight": 1}, {"source": "Build separate vs. merge into one surface", "target": "Product-marketing fit before product-market fit", "weight": 1}, {"source": "Build separate vs. merge into one surface", "target": "Colleague-pilled product philosophy", "weight": 1}, {"source": "Build separate vs. merge into one surface", "target": "100% task completion vs. 90%", "weight": 1}, {"source": "Build separate vs. merge into one surface", "target": "Cursor", "weight": 1}, {"source": "Build separate vs. merge into one surface", "target": "OpenAI", "weight": 1}, {"source": "Build separate vs. merge into one surface", "target": "SpaceX / SpaceXAI", "weight": 1}, {"source": "Build separate vs. merge into one surface", "target": "One unified product for work and personal", "weight": 2}, {"source": "AI is raising workload, not just easing it", "target": "Evals as the new PRD", "weight": 1}, {"source": "AI is raising workload, not just easing it", "target": "Anthropic", "weight": 1}, {"source": "AI is raising workload, not just easing it", "target": "Claude Code", "weight": 1}, {"source": "AI is raising workload, not just easing it", "target": "Token costs collapse by 2028", "weight": 1}, {"source": "Evals as the new PRD", "target": "Anthropic", "weight": 1}, {"source": "Evals as the new PRD", "target": "Claude Code", "weight": 1}, {"source": "Evals as the new PRD", "target": "Token costs collapse by 2028", "weight": 1}, {"source": "Capability overhang", "target": "Product-marketing fit before product-market fit", "weight": 1}, {"source": "Capability overhang", "target": "OpenAI", "weight": 2}, {"source": "Capability overhang", "target": "One unified product for work and personal", "weight": 1}, {"source": "Procurement and services as an under-discussed deal lever", "target": "Pincer model (enterprise sales)", "weight": 1}, {"source": "Procurement and services as an under-discussed deal lever", "target": "Sales stays human despite AI", "weight": 1}, {"source": "Procurement and services as an under-discussed deal lever", "target": "Services line items will keep growing", "weight": 1}, {"source": "Product-marketing fit before product-market fit", "target": "OpenAI", "weight": 1}, {"source": "Product-marketing fit before product-market fit", "target": "One unified product for work and personal", "weight": 1}, {"source": "Colleague-pilled product philosophy", "target": "100% task completion vs. 90%", "weight": 1}, {"source": "Colleague-pilled product philosophy", "target": "Cursor", "weight": 1}, {"source": "Colleague-pilled product philosophy", "target": "SpaceX / SpaceXAI", "weight": 1}, {"source": "Colleague-pilled product philosophy", "target": "One unified product for work and personal", "weight": 1}, {"source": "100% task completion vs. 90%", "target": "Cursor", "weight": 1}, {"source": "100% task completion vs. 90%", "target": "SpaceX / SpaceXAI", "weight": 1}, {"source": "100% task completion vs. 90%", "target": "One unified product for work and personal", "weight": 1}, {"source": "Loops as the new unit of company building", "target": "Cursor", "weight": 1}, {"source": "Loops as the new unit of company building", "target": "Granola", "weight": 1}, {"source": "Pincer model (enterprise sales)", "target": "Sales stays human despite AI", "weight": 1}, {"source": "Pincer model (enterprise sales)", "target": "Services line items will keep growing", "weight": 1}, {"source": "Talent density as a team property, not an individual one", "target": "Cursor", "weight": 1}, {"source": "Talent density as a team property, not an individual one", "target": "Anthropic", "weight": 1}, {"source": "Talent density as a team property, not an individual one", "target": "SpaceX / SpaceXAI", "weight": 1}, {"source": "Talent density as a team property, not an individual one", "target": "Granola", "weight": 1}, {"source": "Talent density as a team property, not an individual one", "target": "Every recruiter becomes a talent engineer", "weight": 1}, {"source": "Cursor", "target": "Anthropic", "weight": 1}, {"source": "Cursor", "target": "SpaceX / SpaceXAI", "weight": 2}, {"source": "Cursor", "target": "Granola", "weight": 2}, {"source": "Cursor", "target": "Every recruiter becomes a talent engineer", "weight": 1}, {"source": "Cursor", "target": "One unified product for work and personal", "weight": 1}, {"source": "Anthropic", "target": "Claude Code", "weight": 2}, {"source": "Anthropic", "target": "SpaceX / SpaceXAI", "weight": 1}, {"source": "Anthropic", "target": "Whatnot", "weight": 1}, {"source": "Anthropic", "target": "Granola", "weight": 1}, {"source": "Anthropic", "target": "Token costs collapse by 2028", "weight": 1}, {"source": "Anthropic", "target": "Every recruiter becomes a talent engineer", "weight": 1}, {"source": "Anthropic", "target": "PM core skills become the scarce differentiator", "weight": 1}, {"source": "OpenAI", "target": "One unified product for work and personal", "weight": 1}, {"source": "Claude Code", "target": "Netflix", "weight": 1}, {"source": "Claude Code", "target": "Whatnot", "weight": 1}, {"source": "Claude Code", "target": "Token costs collapse by 2028", "weight": 1}, {"source": "Claude Code", "target": "PM core skills become the scarce differentiator", "weight": 1}, {"source": "SpaceX / SpaceXAI", "target": "Granola", "weight": 1}, {"source": "SpaceX / SpaceXAI", "target": "Every recruiter becomes a talent engineer", "weight": 1}, {"source": "SpaceX / SpaceXAI", "target": "One unified product for work and personal", "weight": 1}, {"source": "Whatnot", "target": "PM core skills become the scarce differentiator", "weight": 1}, {"source": "Granola", "target": "Every recruiter becomes a talent engineer", "weight": 1}, {"source": "Sales stays human despite AI", "target": "Services line items will keep growing", "weight": 1}]};
+
+const TYPE_COLOR = {
+  theme: 'var(--accent-theme)',
+  concept: 'var(--accent-concept)',
+  entity: 'var(--accent-entity)',
+  prediction: 'var(--accent-prediction)',
+};
+const TYPE_LABEL = { theme: 'Theme', concept: 'Framework', entity: 'Entity', prediction: 'Prediction' };
+const TYPE_LABEL_PLURAL = { theme: 'Themes', concept: 'Frameworks', entity: 'Entities', prediction: 'Predictions' };
+const ROLE_COLOR = { creator: 'var(--accent-theme)', guest: 'var(--accent-entity)' };
+const ROLE_LABEL = { creator: 'Creator', guest: 'Guest' };
+
+// The panel represents creators, not posts - dedupe by speaker so someone
+// with multiple posts this cycle gets one entry, not one per post, and
+// clicking it opens every post they contributed, not just the first found.
+// Lenny is the actual creator/publisher of every post here - the guests are
+// contributors, not the ones who own or monetize the show - so he's always
+// first, and everyone is ordered by appearances after that.
+function buildCreators() {
+  const episodeTitles = Object.keys(DATA.episodes);
+  const creators = [{ id: 'lenny-1', speaker: DATA.show_creator, image: DATA.show_logo, titles: [...episodeTitles], role: 'creator' }];
+  const creatorIndex = new Map();
+  episodeTitles.forEach(title => {
+    const ep = DATA.episodes[title];
+    if (creatorIndex.has(ep.speaker)) {
+      creators[creatorIndex.get(ep.speaker)].titles.push(title);
+    } else {
+      creatorIndex.set(ep.speaker, creators.length);
+      creators.push({ id: ep.speaker, speaker: ep.speaker, image: ep.episode_image, titles: [title], role: 'guest' });
+    }
+  });
+  const [lenny, ...rest] = creators;
+  rest.sort((a, b) => b.titles.length - a.titles.length);
+  return [lenny, ...rest];
+}
+const TYPE_TO_VIEW = { theme: 'themes', concept: 'concepts', entity: 'entities', prediction: 'predictions' };
+// The vertical this edition covers - single source of truth so the brand and
+// the copy that references it can't drift out of sync with each other.
+const VERTICAL_LABEL = 'AI Product';
+
+// Sequential single-hue ramps (dataviz method: sequential = one hue, light->dark),
+// not an arbitrary rainbow - relevance and hype each get their own hue, intensity
+// scales with the score so higher values are visually louder, not just labeled higher.
+function seqColor(value, hue) {
+  const t = Math.max(0, Math.min(100, value)) / 100;
+  const s = 50 + t * 45;
+  const l = 74 - t * 38;
+  return { bg: `hsl(${hue}, ${s}%, ${l}%)`, text: '#0b0d12' };
+}
+const RELEVANCE_HUE = 165; // teal
+const HYPE_HUE = 26; // amber/coral
+
+function getDefaultHighlight() {
+  const highHype = DATA.nodes.filter(n => n.hype > 80);
+  const pool = highHype.length ? highHype : DATA.nodes;
+  return pool.slice().sort((a, b) => b.relevance - a.relevance)[0];
+}
+
+// Scatter's own default, distinct from the graph's - the whole point of that
+// view is the underrated quadrant (relevance > 50, hype < 50), so it should
+// open already showing its strongest resident (highest relevance+hype sum),
+// not a generic "highest relevance with big hype" pick like the graph uses.
+function getUnderratedHighlight() {
+  const underrated = DATA.nodes.filter(n => n.relevance > 50 && n.hype < 50);
+  const pool = underrated.length ? underrated : DATA.nodes;
+  return pool.slice().sort((a, b) => (b.relevance + b.hype) - (a.relevance + a.hype))[0];
+}
+
+function shortDate(pubDate) {
+  const d = new Date(pubDate);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// Same stat-bar language as Overview's "Our analysis found" strip, applied to
+// a card's own two scores - shown alongside the pills above (not replacing
+// them yet) so the two formats can be compared directly.
+function ScoreBar({ item, style }) {
+  const rel = seqColor(item.relevance, RELEVANCE_HUE);
+  const hyp = seqColor(item.hype, HYPE_HUE);
+  return (
+    <div className="score-stat-bar" style={style}>
+      <div className="score-stat-bar-item">
+        <span className="score-stat-bar-num" style={{ color: rel.bg }}>{item.relevance}</span>
+        <span className="score-stat-bar-label">Relevance</span>
+      </div>
+      <div className="score-stat-bar-item">
+        <span className="score-stat-bar-num" style={{ color: hyp.bg }}>{item.hype}</span>
+        <span className="score-stat-bar-label">Hype</span>
+      </div>
+    </div>
+  );
+}
+
+function relatedNames(name) {
+  const s = new Set();
+  DATA.edges.forEach(e => {
+    if (e.source === name) s.add(e.target);
+    if (e.target === name) s.add(e.source);
+  });
+  return s;
+}
+
+// Backing rect sized to the actual text via getBBox, so node labels stay
+// legible over any node or edge they happen to land on - not a fixed guess.
+function NodeLabel({ x, y, text }) {
+  const textRef = React.useRef(null);
+  const [box, setBox] = React.useState(null);
+
+  React.useLayoutEffect(() => {
+    if (textRef.current) setBox(textRef.current.getBBox());
+  }, [text, x, y]);
+
+  return (
+    <g>
+      {box && (
+        <rect x={box.x - 6} y={box.y - 3} width={box.width + 12} height={box.height + 6}
+          rx="4" fill="var(--bg)" opacity="0.92" />
+      )}
+      <text ref={textRef} x={x} y={y} textAnchor="middle" fill="var(--ink)" fontSize="12" fontWeight="700">{text}</text>
+    </g>
+  );
+}
+
+function Tooltip({ label, children }) {
+  return (
+    <span className="tooltip-wrap">
+      {children}
+      <span className="tooltip-bubble">{label}</span>
+    </span>
+  );
+}
+
+// Shared by Drawer and ReportSwitcherModal: while either is open it visually
+// covers the sidebar/nav (see .drawer-overlay/.modal-overlay z-index), so a
+// mouse user physically can't click anything behind it - but without this, a
+// keyboard user could still Tab past it to elements they can't see, and
+// nothing would return focus to whatever triggered it once it closes.
+function useFocusTrap(active, containerRef, onClose) {
+  const previouslyFocused = React.useRef(null);
+  React.useEffect(() => {
+    if (!active) return;
+    previouslyFocused.current = document.activeElement;
+    const container = containerRef.current;
+    if (!container) return;
+    const getFocusable = () => Array.from(
+      container.querySelectorAll('a[href], button:not([disabled]), select, [tabindex]:not([tabindex="-1"])')
+    );
+    (getFocusable()[0] || container).focus();
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      const items = getFocusable();
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      if (previouslyFocused.current && previouslyFocused.current.focus) {
+        previouslyFocused.current.focus();
+      }
+    };
+  }, [active]);
+}
+
+function ReportSwitcherModal({ open, onClose }) {
+  const boxRef = React.useRef(null);
+  useFocusTrap(open, boxRef, onClose);
+  if (!open) return null;
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" ref={boxRef} role="dialog" aria-modal="true" aria-labelledby="modal-title"
+        onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>Close ✕</button>
+        <h2 className="modal-title" id="modal-title">Switch category</h2>
+        <p className="modal-desc">
+          Choose a vertical to view - separate from which edition/date range, set from the sidebar.
+          New categories appear here as they're generated.
+        </p>
+        <select className="modal-select" defaultValue="current">
+          <option value="current">{VERTICAL_LABEL}</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+function Drawer({ episodeTitles, accent, entityName, totalCount, personName, personRole, onClose }) {
+  const open = episodeTitles && episodeTitles.length > 0;
+  const drawerRef = React.useRef(null);
+  useFocusTrap(open, drawerRef, onClose);
+  const sortedTitles = open
+    ? [...episodeTitles].sort((a, b) => new Date(DATA.episodes[b].published) - new Date(DATA.episodes[a].published))
+    : episodeTitles;
+  const totalPosts = Object.keys(DATA.episodes).length;
+  const pct = totalCount ? (totalCount / totalPosts) * 100 : 0;
+  const pctLabel = Number.isInteger(pct) ? pct : pct.toFixed(1);
+
+  const renderEpisodeCard = (title) => {
+    const ep = DATA.episodes[title];
+    if (!ep) return null;
+    return (
+      <div className="episode-card" key={title}>
+        <img className="episode-card-img" src={ep.episode_image} alt="" />
+        <p className="ep-title" style={{ color: accent }}>{title.split(' | ')[0]}</p>
+        <div className="ep-meta">
+          <div>Guest: <strong>{ep.speaker}</strong></div>
+          <div>Published: <strong>{shortDate(ep.published)}</strong></div>
+        </div>
+        <div className="ep-links">
+          <a href={ep.episode_url} target="_blank" rel="noreferrer">
+            {ep.source_type === 'podcast' ? 'Listen to the podcast' : 'Source page'} ↗
+          </a>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <React.Fragment>
+      <div className={'drawer-overlay' + (open ? ' open' : '')} onClick={onClose} />
+      <div className={'drawer' + (open ? ' open' : '')} ref={drawerRef}
+        role="dialog" aria-modal="true" aria-label={personName || entityName || 'Details'}>
+        <button className="drawer-close" onClick={onClose}>Close ✕</button>
+        {personName && (
+          <h2 className="drawer-person-title" style={{ color: accent }}>{personName}</h2>
+        )}
+        {entityName && (
+          <p className="drawer-summary">
+            <strong style={{ color: accent }}>{entityName}</strong> appears in{' '}
+            <strong className="drawer-summary-num">{totalCount}</strong> posts ({pctLabel}%) this cycle.
+          </p>
+        )}
+        <div className="drawer-show-header">
+          <img src={DATA.show_logo} alt="" />
+          <div className="show-name" style={{ color: accent }}>{DATA.show_name}</div>
+        </div>
+        {open && personRole === 'creator' && (
+          <div className="drawer-section-label">As a creator</div>
+        )}
+        {open && personRole === 'guest' && (
+          <div className="drawer-section-label">As a guest</div>
+        )}
+        {open && sortedTitles.map(renderEpisodeCard)}
+      </div>
+    </React.Fragment>
+  );
+}
+
+// Google's favicon service has no real logo for every domain it's asked
+// about - it silently returns a generic placeholder with a 404 status rather
+// than erroring, which a browser <img> renders anyway (no onError fires for
+// that case). onError here still catches genuine failures (blocked, no
+// network, non-image response) and swaps to a colored initial instead of a
+// broken-image icon.
+function EntityLogo({ item }) {
+  const [failed, setFailed] = React.useState(false);
+  if (!item.domain) return null;
+  if (failed) {
+    return (
+      <span className="entity-logo entity-logo-fallback" style={{ background: TYPE_COLOR[item.type] }}>
+        {item.name.charAt(0).toUpperCase()}
+      </span>
+    );
+  }
+  return (
+    <img className="entity-logo" alt=""
+      src={`https://www.google.com/s2/favicons?domain=${item.domain}&sz=128`}
+      onError={() => setFailed(true)} />
+  );
+}
+
+function Card({ item, focus, setFocus, openDrawer }) {
+  const related = focus ? relatedNames(focus) : null;
+  const isFocus = focus === item.name;
+  const isLinked = related && related.has(item.name);
+  const isDimmed = focus && !isFocus && !isLinked;
+  const cls = 'card' + (isFocus || isLinked ? ' linked' : '') + (isDimmed ? ' dimmed' : '');
+  const accent = TYPE_COLOR[item.type];
+  const openAll = () => openDrawer(item.episodes, accent, item.name, item.episodes.length);
+  // The card is a content container with several independently-interactive
+  // children (the relate toggle, each source chip, each avatar) - it can't be
+  // a real <button> (buttons can't contain other interactive elements), so it
+  // gets role="button" + tabIndex + a keydown handler instead. Checking
+  // target === currentTarget stops Enter/Space on a child button from also
+  // triggering the card's own Enter/Space handler via bubbling.
+  const onCardKeyDown = (e) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAll(); }
+  };
+  return (
+    <div className={cls} data-item-name={item.name} role="button" tabIndex={0}
+      aria-label={`View sources for ${item.name}`} onClick={openAll} onKeyDown={onCardKeyDown}>
+      <Tooltip label="Highlight related items">
+        <button className={'card-relate-btn' + (isFocus ? ' active' : '')}
+          onClick={(e) => { e.stopPropagation(); setFocus(isFocus ? null : item.name); }}
+          aria-label="Highlight related items" aria-pressed={isFocus}>
+          <svg viewBox="0 0 16 16" width="13" height="13">
+            <circle cx="3" cy="3" r="2" fill="currentColor" />
+            <circle cx="13" cy="3" r="2" fill="currentColor" />
+            <circle cx="8" cy="13" r="2" fill="currentColor" />
+            <line x1="3" y1="3" x2="8" y2="13" stroke="currentColor" strokeWidth="1.2" />
+            <line x1="13" y1="3" x2="8" y2="13" stroke="currentColor" strokeWidth="1.2" />
+          </svg>
+        </button>
+      </Tooltip>
+      <div className="card-name-row">
+        {item.type === 'entity' && <EntityLogo item={item} />}
+        <p className="card-name" style={{ color: accent }}>{item.name}</p>
+      </div>
+      <p className="card-desc">{item.context}</p>
+      <ScoreBar item={item} />
+      <div className="sources-row">
+        {item.episodes.map(title => {
+          const ep = DATA.episodes[title];
+          return (
+            <button className="source-chip" key={title}
+              onClick={(e) => { e.stopPropagation(); openDrawer([title], accent, item.name, item.episodes.length); }}>
+              {ep ? ep.speaker : title}
+            </button>
+          );
+        })}
+      </div>
+      <div className="card-avatars">
+        {item.episodes.map(title => {
+          const ep = DATA.episodes[title];
+          if (!ep) return null;
+          return (
+            <button key={title} className="avatar-btn" title={ep.speaker}
+              aria-label={`View ${ep.speaker}'s episode`}
+              onClick={(e) => { e.stopPropagation(); openDrawer([title], accent, item.name, item.episodes.length); }}>
+              <img className="avatar-img sm" src={ep.episode_image} alt="" />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Legend({ active, onToggle }) {
+  const interactive = !!onToggle;
+  const Tag = interactive ? 'button' : 'span';
+  return (
+    <div className="legend">
+      {Object.keys(TYPE_LABEL).map(t => {
+        const isOn = !active || active.size === 0 || active.has(t);
+        return (
+          <Tag
+            key={t}
+            className={'legend-item' + (interactive ? ' interactive' : '') + (interactive && !isOn ? ' inactive' : '')}
+            onClick={interactive ? () => onToggle(t) : undefined}
+            aria-pressed={interactive ? isOn : undefined}
+          >
+            <span className="dot" style={{ background: TYPE_COLOR[t] }} /> {TYPE_LABEL[t]}
+          </Tag>
+        );
+      })}
+    </div>
+  );
+}
+
+function TableToggle({ showTable, setShowTable, cardLabel }) {
+  return (
+    <div className="toggle-row">
+      <button className="toggle-btn" onClick={() => setShowTable(!showTable)}>
+        {showTable ? `Show ${cardLabel || 'cards'}` : 'Show table'}
+      </button>
+    </div>
+  );
+}
+
+function CreatorsTable({ creators, openDrawer }) {
+  const openRow = (c) => openDrawer(c.titles, ROLE_COLOR[c.role], undefined, undefined, c.speaker, c.role);
+  return (
+    <table>
+      <thead><tr><th>Name</th><th>Role</th><th>Posts</th></tr></thead>
+      <tbody>
+        {creators.map(c => (
+          <tr key={c.id} style={{ cursor: 'pointer' }} tabIndex={0} role="button"
+            aria-label={`View ${c.speaker}'s posts`}
+            onClick={() => openRow(c)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRow(c); } }}>
+            <td className="name-cell">{c.speaker}</td>
+            <td>{ROLE_LABEL[c.role]}</td>
+            <td>{c.titles.length}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function CreatorCard({ creator, openDrawer, compact }) {
+  const color = ROLE_COLOR[creator.role];
+  return (
+    <button className={'creator-card' + (compact ? ' compact' : '')}
+      onClick={() => openDrawer(creator.titles, color, undefined, undefined, creator.speaker, creator.role)}>
+      <img className={'creator-card-avatar' + (compact ? ' sm' : '')} src={creator.image} alt="" />
+      <div>
+        <p className={'creator-card-name' + (compact ? ' sm' : '')} style={{ color }}>{creator.speaker}</p>
+        <p className={'creator-card-meta' + (compact ? ' sm' : '')}>
+          <span style={{ color, fontWeight: 700 }}>{ROLE_LABEL[creator.role]}</span> ·{' '}
+          {creator.titles.length} post{creator.titles.length === 1 ? '' : 's'} this cycle
+        </p>
+      </div>
+    </button>
+  );
+}
+
+function ThoughtLeadersView({ openDrawer, navigate }) {
+  const creators = buildCreators();
+  const [lead, ...guests] = creators;
+  const totalPosts = Object.keys(DATA.episodes).length;
+  const [showTable, setShowTable] = React.useState(false);
+  return (
+    <div>
+      <div className="kicker">Thought Leaders</div>
+      <h1 className="view-title">The voices powering this edition</h1>
+      <p className="pullquote">
+        We've analyzed{' '}
+        <mark className="pq-mark" style={{background: 'var(--accent-leaders)'}}>{totalPosts} pieces of content</mark>{' '}
+        from these {creators.length} creators.
+      </p>
+      {showTable ? (
+        <>
+          <div className="section-heading-row">
+            <h2 className="section-title" style={{ margin: 0 }}>All thought leaders</h2>
+            <button className="toggle-btn" onClick={() => setShowTable(false)}>Show cards</button>
+          </div>
+          <CreatorsTable creators={creators} openDrawer={openDrawer} />
+        </>
+      ) : (
+        <>
+          <div className="section-heading-row">
+            <h2 className="section-title" style={{ margin: 0 }}>Creators</h2>
+            <button className="toggle-btn" onClick={() => setShowTable(true)}>Show table</button>
+          </div>
+          <div style={{ maxWidth: 420, marginBottom: 8 }}>
+            <CreatorCard creator={lead} openDrawer={openDrawer} />
+          </div>
+          <h2 className="section-title">Guests</h2>
+          <div className="creator-grid">
+            {guests.map(c => <CreatorCard key={c.id} creator={c} openDrawer={openDrawer} compact />)}
+          </div>
+        </>
+      )}
+      <div className="footer-note">
+        Ordered by appearances this cycle, creator first. As more source types join (newsletters,
+        social), this becomes the place to see who's actually driving the conversation, not just
+        who's quoted most.
+      </div>
+    </div>
+  );
+}
+
+function DataTable({ items }) {
+  return (
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>Relevance</th><th>Hype</th><th>Sources</th></tr></thead>
+      <tbody>
+        {items.map(i => (
+          <tr key={i.name}>
+            <td className="name-cell">{i.name}</td>
+            <td>{TYPE_LABEL[i.type]}</td>
+            <td>{i.relevance}</td>
+            <td>{i.hype}</td>
+            <td>{i.episodes.length}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function CardGrid({ items, openDrawer, highlight }) {
+  const [focus, setFocus] = React.useState(() => (highlight && items.some(i => i.name === highlight)) ? highlight : null);
+  const [showTable, setShowTable] = React.useState(false);
+
+  // A deep link can arrive after this grid is already mounted (same view,
+  // different item), not just on first load - re-sync and scroll the target
+  // card into view whenever `highlight` changes, not only on mount.
+  React.useEffect(() => {
+    if (!highlight || !items.some(i => i.name === highlight)) return;
+    setFocus(highlight);
+    const el = Array.from(document.querySelectorAll('[data-item-name]')).find(n => n.dataset.itemName === highlight);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [highlight]);
+
+  return (
+    <div>
+      <TableToggle showTable={showTable} setShowTable={setShowTable} />
+      {showTable ? <DataTable items={items} /> : (
+        <div className="grid">
+          {items.map(i => <Card key={i.name} item={i} focus={focus} setFocus={setFocus} openDrawer={openDrawer} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Overview({ openDrawer, navigate }) {
+  const counts = { theme: 0, concept: 0, entity: 0, prediction: 0 };
+  DATA.nodes.forEach(n => counts[n.type]++);
+  const episodeTitles = Object.keys(DATA.episodes);
+  const creators = buildCreators();
+  return (
+    <div>
+      <div className="kicker">
+        {DATA.nodes.length} data dimensions from {episodeTitles.length} sources this cycle
+      </div>
+      <h1 className="view-title">What's driving the {VERTICAL_LABEL} conversation</h1>
+      <p className="pullquote" style={{maxWidth: 'none'}}>
+        20% of our panel independently converged on{' '}
+        <mark className="pq-mark">"moats are discovered, not planned"</mark> - without prompting
+        each other. That kind of unplanned agreement, more than any single hot take, is the real
+        signal in this batch.
+      </p>
+      <h2 className="section-title" style={{color: 'var(--accent-theme)'}}>Key Takeaways &amp; Narratives</h2>
+      <div className="takeaways">
+        {KEY_TAKEAWAYS.map((t, i) => {
+          const backingItem = t.itemName ? DATA.nodes.find(n => n.name === t.itemName) : null;
+          return (
+            <button key={i} className="takeaway-item" style={{'--tk-color': VIEW_COLOR[t.view]}} onClick={() => navigate(t.view, t.itemName)}>
+              <span className="takeaway-text">{t.text}</span>
+              <div className="takeaway-footer">
+                {backingItem && <ScoreBar item={backingItem} style={{ margin: 0, flex: '0 0 auto' }} />}
+                <span className="takeaway-dest">{VIEWS[t.view].label}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <h2 className="section-title" style={{color: 'var(--accent-leaders)'}}>Thought Leaders in this edition</h2>
+      <div className="teaser-row">
+        <div className="teaser-avatars">
+          {creators.filter(c => c.role === 'creator').map(c => (
+            <span key={c.id} className="teaser-tooltip-anchor">
+              <Tooltip label={<><span style={{ color: 'var(--accent-theme)', fontWeight: 800 }}>Creator</span> · {c.speaker}</>}>
+                <img className="teaser-avatar" src={c.image} alt={c.speaker} />
+              </Tooltip>
+            </span>
+          ))}
+        </div>
+        <span className="teaser-text">+{creators.filter(c => c.role !== 'creator').length} more</span>
+        <button className="teaser-button" onClick={() => navigate('leaders')}>View all</button>
+      </div>
+      <h2 className="section-title" style={{color: 'var(--accent-concept)'}}>Our analysis found</h2>
+      <div className="stat-bar">
+        {Object.keys(counts).map(t => (
+          <button key={t} className="stat-bar-item" style={{'--stat-color': TYPE_COLOR[t]}}
+            onClick={() => navigate(TYPE_TO_VIEW[t])}>
+            <span className="stat-bar-num" style={{color: TYPE_COLOR[t]}}>{counts[t]}</span>
+            <span className="stat-bar-label">{TYPE_LABEL_PLURAL[t]}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ThemesView({ openDrawer, highlight }) {
+  const items = DATA.nodes.filter(n => n.type === 'theme');
+  return (
+    <div>
+      <div className="kicker">Themes &amp; Narratives</div>
+      <h1 className="view-title">The arguments being made, not just the topics</h1>
+      <p className="pullquote">
+        Two credible teams are making <mark className="pq-mark" style={{background: 'var(--accent-theme)'}}>opposite architecture bets</mark>{' '}
+        right now: SpaceXAI built Grok Bot as a deliberately separate product, while OpenAI's
+        stated goal is merging every surface into one. Neither is obviously right yet.
+      </p>
+      <CardGrid items={items} openDrawer={openDrawer} highlight={highlight} />
+    </div>
+  );
+}
+
+function ConceptsView({ openDrawer, highlight }) {
+  const items = DATA.nodes.filter(n => n.type === 'concept');
+  return (
+    <div>
+      <div className="kicker">Frameworks Worth Stealing</div>
+      <h1 className="view-title">Concrete heuristics, not just observations</h1>
+      <p className="pullquote">
+        <mark className="pq-mark" style={{background: 'var(--accent-concept)'}}>"Would you want this from a human teammate?"</mark> resolved
+        product debates at Grok Bot better than typical SaaS feature-tradeoff thinking - a
+        one-line test any team building agentic features can borrow today.
+      </p>
+      <CardGrid items={items} openDrawer={openDrawer} highlight={highlight} />
+    </div>
+  );
+}
+
+function EntitiesView({ openDrawer, highlight }) {
+  const items = DATA.nodes.filter(n => n.type === 'entity');
+  return (
+    <div>
+      <div className="kicker">Who Keeps Coming Up</div>
+      <h1 className="view-title">The companies and products everyone's talking about</h1>
+      <p className="pullquote">
+        OpenAI's Wikipedia traffic <mark className="pq-mark" style={{background: 'var(--accent-entity)'}}>jumped 68% week-over-week</mark> - on
+        top of an already-enormous base. A spike that size, on that much existing attention, is
+        the sharpest real signal in this whole corpus.
+      </p>
+      <CardGrid items={items} openDrawer={openDrawer} highlight={highlight} />
+    </div>
+  );
+}
+
+function PredictionsView({ openDrawer, highlight }) {
+  const items = DATA.nodes.filter(n => n.type === 'prediction');
+  return (
+    <div>
+      <div className="kicker">What's Coming</div>
+      <h1 className="view-title">Where this panel thinks things are heading</h1>
+      <p className="pullquote">
+        <mark className="pq-mark" style={{background: 'var(--accent-prediction)'}}>"PM theater"</mark> - alignment-driving and storytelling without
+        real customer/tech/business understanding underneath - is named across this batch as the
+        thing AI actually replaces first, not the PM role itself.
+      </p>
+      <CardGrid items={items} openDrawer={openDrawer} highlight={highlight} />
+    </div>
+  );
+}
+
+function GraphView({ navigate, highlight }) {
+  const [positions, setPositions] = React.useState(null);
+  const [selectedName, setSelectedName] = React.useState(() => {
+    const requested = highlight && DATA.nodes.find(n => n.name === highlight);
+    return (requested || getDefaultHighlight()).name;
+  });
+  const [activeTypes, setActiveTypes] = React.useState(() => new Set());
+  const [showTable, setShowTable] = React.useState(false);
+  const width = 560, height = 540;
+
+  // Same reasoning as Scatter's version of this effect - a deep link can
+  // arrive while this view is already mounted, not just on first load.
+  React.useEffect(() => {
+    if (highlight && DATA.nodes.some(n => n.name === highlight)) {
+      setSelectedName(highlight);
+    }
+  }, [highlight]);
+
+  const toggleType = (t) => {
+    setActiveTypes(prev => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t); else next.add(t);
+      return next;
+    });
+  };
+  const isVisible = (type) => activeTypes.size === 0 || activeTypes.has(type);
+
+  React.useEffect(() => {
+    const nodes = DATA.nodes.map(n => ({ ...n, id: n.name }));
+    const links = DATA.edges.map(e => ({ ...e }));
+    const sim = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id(d => d.id).distance(d => 90 - d.weight * 8).strength(0.35))
+      .force('charge', d3.forceManyBody().strength(-140))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collide', d3.forceCollide(d => 12 + d.relevance / 6))
+      .stop();
+    for (let i = 0; i < 300; i++) sim.tick();
+    setPositions({ nodes, links });
+  }, []);
+
+  if (!positions) return <div className="graph-wrap" style={{height, display:'flex',alignItems:'center',justifyContent:'center',color:'var(--ink-faint)'}}>computing layout…</div>;
+
+  const related = relatedNames(selectedName);
+  const selectedItem = DATA.nodes.find(n => n.name === selectedName);
+
+  return (
+    <div>
+      <div className="kicker">How It All Connects</div>
+      <h1 className="view-title">Where the conversations overlap</h1>
+      <p className="pullquote">
+        Cursor, Anthropic, and "systems thinking" sit at the center of this graph for a reason -
+        they're the three things our panel{' '}
+        <mark className="pq-mark">kept independently returning to</mark>.
+      </p>
+      <Legend active={activeTypes} onToggle={toggleType} />
+      <TableToggle showTable={showTable} setShowTable={setShowTable} cardLabel="graph" />
+      {showTable ? (
+        <DataTable items={DATA.nodes.filter(n => isVisible(n.type))} />
+      ) : (
+      <div className="graph-wrap">
+        <div className="graph-svg-wrap">
+          <svg width={width} height={height}>
+            {positions.links.filter(l => isVisible(l.source.type) && isVisible(l.target.type)).map((l, i) => {
+              const dim = l.source.id !== selectedName && l.target.id !== selectedName;
+              return (
+                <line key={i} x1={l.source.x} y1={l.source.y} x2={l.target.x} y2={l.target.y}
+                  stroke="var(--ink-muted)" strokeWidth={Math.max(2, Math.min(l.weight * 1.6, 5))}
+                  opacity={dim ? 0.1 : 0.65} />
+              );
+            })}
+            {positions.nodes.filter(n => isVisible(n.type)).sort((a, b) => (a.id === selectedName ? 1 : 0) - (b.id === selectedName ? 1 : 0)).map((n, i) => {
+              const isSelected = n.id === selectedName;
+              const dim = !isSelected && !related.has(n.id);
+              const r = 6 + n.relevance / 6;
+              return (
+                <g key={n.id} opacity={dim ? 0.25 : 1}
+                   tabIndex={0} role="button"
+                   aria-label={`${n.name}: relevance ${n.relevance}, hype ${n.hype}`}
+                   onMouseEnter={() => setSelectedName(n.id)}
+                   onFocus={() => setSelectedName(n.id)}
+                   style={{ cursor: 'pointer' }}>
+                  <circle cx={n.x} cy={n.y} r={isSelected ? r + 3 : r} fill={TYPE_COLOR[n.type]}
+                    stroke={isSelected ? 'var(--accent-theme)' : 'var(--bg)'} strokeWidth={isSelected ? 3 : 2} />
+                  {isSelected && (
+                    <NodeLabel x={n.x} y={n.y - r - 9} text={n.name} />
+                  )}
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+        <div className="detail-panel">
+          <div className="dp-name-row">
+            {selectedItem.type === 'entity' && <EntityLogo item={selectedItem} />}
+            <div className="dp-name" style={{color: TYPE_COLOR[selectedItem.type]}}>{selectedItem.name}</div>
+          </div>
+          <ScoreBar item={selectedItem} />
+          <div className="dp-desc">{selectedItem.context}</div>
+          <button className="dp-link" style={{color: TYPE_COLOR[selectedItem.type]}}
+            onClick={() => navigate(TYPE_TO_VIEW[selectedItem.type], selectedItem.name)}>
+            {VIEWS[TYPE_TO_VIEW[selectedItem.type]].label}
+          </button>
+          <div className="dp-hint">Hover or tab to any node to inspect it</div>
+        </div>
+      </div>
+      )}
+      <div className="footer-note">
+        Node size = relevance score. Edge thickness = number of shared episodes. Layout computed
+        with a force simulation (positions only) - color and everything else hand-rendered as
+        SVG, not a charting library. Only pairs sharing at least one episode are connected; with a
+        corpus this size, drawing every possible pair would be noise, not signal. Defaults to the
+        highest-relevance item with hype over 80. Click the legend to isolate one or more types -
+        click them all off to bring everything back.
+      </div>
+    </div>
+  );
+}
+
+function ScatterView({ navigate, highlight }) {
+  const width = 560, height = 500, pad = 56;
+  const [selected, setSelected] = React.useState(() => {
+    const requested = highlight && DATA.nodes.find(n => n.name === highlight);
+    return requested || getUnderratedHighlight();
+  });
+  const [activeTypes, setActiveTypes] = React.useState(() => new Set());
+  const [showTable, setShowTable] = React.useState(false);
+
+  // A deep link (e.g. from a Key Takeaway backed by a specific item) can
+  // arrive after this view is already mounted, not just on first load - the
+  // lazy initializer above only covers a fresh mount, so this keeps `selected`
+  // in sync if `highlight` changes while already on this page.
+  React.useEffect(() => {
+    if (highlight) {
+      const requested = DATA.nodes.find(n => n.name === highlight);
+      if (requested) setSelected(requested);
+    }
+  }, [highlight]);
+  const x = v => pad + v / 100 * (width - pad * 1.6);
+  const y = v => height - pad - v / 100 * (height - pad * 1.6);
+  const xMid = x(50);
+  const yMid = y(50);
+
+  const toggleType = (t) => {
+    setActiveTypes(prev => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t); else next.add(t);
+      return next;
+    });
+  };
+  const isVisible = (type) => activeTypes.size === 0 || activeTypes.has(type);
+
+  return (
+    <div>
+      <div className="kicker">Relevance vs. Hype</div>
+      <h1 className="view-title">What matters in {VERTICAL_LABEL}, plotted against the froth</h1>
+      <p className="pullquote">
+        The most useful quadrant isn't "high relevance, high hype" - it's{' '}
+        <mark className="pq-mark">high relevance, lower hype</mark>: signal your peers haven't all
+        piled onto yet.
+      </p>
+      <Legend active={activeTypes} onToggle={toggleType} />
+      <TableToggle showTable={showTable} setShowTable={setShowTable} cardLabel="chart" />
+      {showTable ? (
+        <DataTable items={DATA.nodes.filter(n => isVisible(n.type))} />
+      ) : (
+      <div className="graph-wrap">
+        <div className="graph-svg-wrap">
+          <svg width={width} height={height}>
+            {/* Quadrant overlay - a light wash on the one the pull-quote calls out,
+                a dashed divider at the midpoint of each axis, faint corner labels
+                naming all four so the copy above isn't asserting something the
+                chart itself doesn't show. */}
+            <rect x={pad} y={pad*0.6} width={xMid-pad} height={yMid-pad*0.6} fill="var(--accent-theme)" opacity="0.07" />
+            <line x1={xMid} y1={pad*0.6} x2={xMid} y2={height-pad} stroke="var(--border)" strokeDasharray="4 4" />
+            <line x1={pad} y1={yMid} x2={width-pad*0.6} y2={yMid} stroke="var(--border)" strokeDasharray="4 4" />
+            <text x={pad+10} y={pad*0.6+18} textAnchor="start" fill="var(--accent-theme)" fontSize="12" fontWeight="700" letterSpacing="0.05em">UNDERRATED</text>
+            <text x={width-pad*0.6-10} y={pad*0.6+18} textAnchor="end" fill="var(--ink-faint)" fontSize="12" fontWeight="700" letterSpacing="0.05em">MAINSTREAM</text>
+            <text x={pad+10} y={height-pad-10} textAnchor="start" fill="var(--ink-faint)" fontSize="12" fontWeight="700" letterSpacing="0.05em">AMBIENT</text>
+            <text x={width-pad*0.6-10} y={height-pad-10} textAnchor="end" fill="var(--ink-faint)" fontSize="12" fontWeight="700" letterSpacing="0.05em">FROTHY</text>
+            <line x1={pad} y1={height-pad} x2={width-pad*0.6} y2={height-pad} stroke="var(--border)" />
+            <line x1={pad} y1={pad*0.6} x2={pad} y2={height-pad} stroke="var(--border)" />
+            <text x={width/2} y={height-14} textAnchor="middle" fill="var(--ink-faint)" fontSize="12">Hype (current reception) →</text>
+            <text x={16} y={height/2} textAnchor="middle" fill="var(--ink-faint)" fontSize="12" transform={`rotate(-90, 16, ${height/2})`}>Relevance to you →</text>
+            {DATA.nodes.filter(n => isVisible(n.type)).map((n, i) => {
+              const isSelected = selected.name === n.name;
+              return (
+                <g key={i} tabIndex={0} role="button"
+                   aria-label={`${n.name}: relevance ${n.relevance}, hype ${n.hype}`}
+                   onMouseEnter={() => setSelected(n)} onFocus={() => setSelected(n)}
+                   style={{cursor:'pointer'}}>
+                  <circle cx={x(n.hype)} cy={y(n.relevance)} r={isSelected ? 11 : 8} fill={TYPE_COLOR[n.type]}
+                    opacity={isSelected ? 1 : 0.55}
+                    stroke={isSelected ? 'var(--accent-theme)' : 'var(--bg)'} strokeWidth={isSelected ? 3 : 1.5} />
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+        <div className="detail-panel">
+          <div className="dp-name-row">
+            {selected.type === 'entity' && <EntityLogo item={selected} />}
+            <div className="dp-name" style={{color: TYPE_COLOR[selected.type]}}>{selected.name}</div>
+          </div>
+          <ScoreBar item={selected} />
+          <div className="dp-desc">{selected.context}</div>
+          <button className="dp-link" style={{color: TYPE_COLOR[selected.type]}}
+            onClick={() => navigate(TYPE_TO_VIEW[selected.type], selected.name)}>
+            {VIEWS[TYPE_TO_VIEW[selected.type]].label}
+          </button>
+          <div className="dp-hint">Hover or tab to any point to inspect it</div>
+        </div>
+      </div>
+      )}
+      <div className="footer-note">
+        Quadrants split at the midpoint of each axis (score 50). Defaults to the strongest resident
+        of the underrated quadrant (relevance over 50, hype under 50) by combined score - the
+        analyst's own pick for most-earned, least-noticed attention in this batch. Click the legend
+        to isolate one or more types - click them all off to bring everything back.
+      </div>
+    </div>
+  );
+}
+
+// Mocked account scaffolding - visual only, no real auth/profile system
+// behind it. Static display rows rather than real form inputs, deliberately,
+// so nothing here implies a save/edit action that doesn't actually work.
+function SettingsView({ navigate }) {
+  return (
+    <div>
+      <div className="kicker">Account</div>
+      <h1 className="view-title">Profile settings</h1>
+      <div className="settings-card">
+        <div className="settings-avatar-row">
+          <div className="settings-identity">
+            <span className="settings-avatar">D</span>
+            <div>
+              <div className="settings-name">Demo User</div>
+              <div className="settings-sub">demo@example.com</div>
+            </div>
+          </div>
+          <button className="settings-edit-btn" disabled>Edit Profile</button>
+        </div>
+        <div className="settings-field">
+          <span className="settings-label">Display name</span>
+          <span className="settings-value">Demo User</span>
+        </div>
+        <div className="settings-field">
+          <span className="settings-label">Email</span>
+          <span className="settings-value">demo@example.com</span>
+        </div>
+        <div className="settings-field">
+          <span className="settings-label">Company</span>
+          <span className="settings-value">Demo Company</span>
+        </div>
+        <div className="settings-field">
+          <span className="settings-label">Job Title</span>
+          <span className="settings-value">Head of Product</span>
+        </div>
+      </div>
+      <button className="dp-link" style={{ color: 'var(--accent-theme)', width: 'auto', marginTop: 24, padding: '10px 22px' }}
+        onClick={() => navigate('overview')}>
+        ← Back to report
+      </button>
+    </div>
+  );
+}
+
+// Order = the job to be done (understand the vertical): Overview sets the
+// frame, Relevance vs. Hype is the single most meaningful chart so it comes
+// right after, Predictions/Themes/Frameworks/Entities read as detail views of
+// that chart's data, and How It All Connects closes as the cross-cutting
+// synthesis once every category has been seen.
+const VIEWS = {
+  overview: { label: 'Overview', render: Overview },
+  scatter: { label: 'Relevance vs. Hype', render: ScatterView },
+  predictions: { label: "What's Coming", render: PredictionsView },
+  themes: { label: 'Themes & Narratives', render: ThemesView },
+  concepts: { label: 'Frameworks Worth Stealing', render: ConceptsView },
+  entities: { label: "Who Keeps Coming Up", render: EntitiesView },
+  graph: { label: 'How It All Connects', render: GraphView },
+  leaders: { label: 'Thought Leaders', render: ThoughtLeadersView },
+};
+
+// Topline hooks for the Overview page - one per other view, distinct from
+// that page's own pull-quote so nothing on Overview repeats itself. Each is a
+// direct pointer into the analysis, not a restatement of a view's title.
+// Categorical, fixed order, one hue per destination view - graph and scatter
+// get two new hues (sage, lavender) rather than reusing an existing one, since
+// reusing themes/concepts/entities/predictions' own colors here would wrongly
+// imply those two takeaways belong to a type they don't.
+const VIEW_COLOR = {
+  themes: 'var(--accent-theme)',
+  concepts: 'var(--accent-concept)',
+  entities: 'var(--accent-entity)',
+  leaders: 'var(--accent-leaders)',
+  graph: 'var(--accent-graph)',
+  scatter: 'var(--accent-scatter)',
+  predictions: 'var(--accent-prediction)',
+};
+
+const KEY_TAKEAWAYS = [
+  { view: 'scatter', itemName: 'Services line items will keep growing', text: <>"Services line items will keep growing" scores 82 on relevance but just <span className="tk-hl" style={{color: VIEW_COLOR.scatter}}>21 on hype</span> - the widest gap in this whole batch.</> },
+  { view: 'predictions', itemName: 'PM core skills become the scarce differentiator', text: <>As AI removes execution friction, <span className="tk-hl" style={{color: VIEW_COLOR.predictions}}>real PM judgment</span> - not 'PM theater' - becomes the scarce differentiator.</> },
+  { view: 'themes', itemName: 'Procurement and services as an under-discussed deal lever', text: <>Services revenue isn't a deviation from 'real' SaaS - it's <span className="tk-hl" style={{color: VIEW_COLOR.themes}}>an accepted, growing budget line</span> most operators underrate.</> },
+  { view: 'concepts', itemName: '100% task completion vs. 90%', text: <>An agent that fully completes a task feels <span className="tk-hl" style={{color: VIEW_COLOR.concepts}}>categorically different</span> from one that gets 90% there - the single highest-relevance finding in this batch.</> },
+  { view: 'entities', itemName: 'OpenAI', text: <>OpenAI's Wikipedia traffic <span className="tk-hl" style={{color: VIEW_COLOR.entities}}>jumped 68%</span> in a single week, on top of an already-massive base.</> },
+  { view: 'graph', itemName: 'Cursor', text: <>Cursor shows up in <span className="tk-hl" style={{color: VIEW_COLOR.graph}}>three unrelated episodes</span> - once as a coding tool, once as an employer, once as a case study in undesigned moats.</> },
+];
+
+// Settings lives outside VIEWS (and off the sidebar nav) - reachable only via
+// the profile gear icon, same way a real account page usually isn't a primary
+// nav item either.
+const ALL_VIEWS = { ...VIEWS, settings: { label: 'Profile Settings', render: SettingsView } };
+
+// Hash-based routing - works from a plain file:// double-click with no server,
+// unlike pushState'd clean paths which need server rewrite rules to survive a
+// refresh or a pasted link. The hash is the source of truth for `view`; clicks
+// just change it and let the hashchange listener below update state. An
+// optional `~itemName` suffix carries which specific item a view should land
+// on already selected (e.g. a Key Takeaway backed by one item, deep-linking
+// into its chart with that item pre-highlighted instead of the default).
+function parseHash() {
+  const raw = window.location.hash.replace(/^#/, '');
+  const [key, highlightRaw] = raw.split('~');
+  const view = ALL_VIEWS[key] ? key : 'overview';
+  const highlight = highlightRaw ? decodeURIComponent(highlightRaw) : null;
+  return { view, highlight };
+}
+
+// Real, interactive date inputs - clicking either one opens the browser's own
+// native calendar picker. Pre-filled with the corpus's actual min/max episode
+// dates; changing them updates local state genuinely, though nothing in the
+// report re-filters against it yet - that's a separate, bigger feature.
+// A report is a fixed snapshot, not a live query - so this is edition
+// switching (which weekly snapshot), not an arbitrary date-range filter.
+// Only the current edition is real; more appear here as new ones generate.
+function EditionSwitcher() {
+  return (
+    <div className="sidebar-footer">
+      <div className="sidebar-footer-label">Report edition</div>
+      <select className="edition-select" defaultValue="current">
+        <option value="current">{DATA.latest_edition}</option>
+      </select>
+    </div>
+  );
+}
+
+function App() {
+  const [{ view, highlight }, setRoute] = React.useState(parseHash);
+  const [drawer, setDrawer] = React.useState(null);
+  const [switcherOpen, setSwitcherOpen] = React.useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+
+  // Closing the off-canvas nav on every route change (not just the explicit
+  // nav-item click above) covers navigation that bypasses it too - the brand
+  // link, a takeaway click-through, a deep link arriving via hashchange.
+  React.useEffect(() => { setMobileNavOpen(false); }, [view]);
+
+  React.useEffect(() => {
+    const onHashChange = () => setRoute(parseHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  // The page itself scrolls (no inner scroll container for .main), and React
+  // swapping view content doesn't reset that - without this, navigating in
+  // from partway down one page lands you at the same pixel offset on the next.
+  // Skipped when a deep-link highlight is set - React fires child effects
+  // before parent effects, so CardGrid/Scatter/Graph's own scrollIntoView
+  // would otherwise run first and get silently overwritten by this reset.
+  React.useEffect(() => {
+    if (!highlight) window.scrollTo(0, 0);
+  }, [view]);
+
+  // A drawer opened on one view is about a specific item on that view - it
+  // has no meaning on whatever view gets navigated to next, and left open it
+  // sits on top of the new content and blocks interaction with it entirely.
+  React.useEffect(() => { setDrawer(null); }, [view]);
+
+  const navigate = (key, itemName) => {
+    const newHash = '#' + key + (itemName ? '~' + encodeURIComponent(itemName) : '');
+    if (window.location.hash === newHash) {
+      setRoute({ view: key, highlight: itemName || null });
+    } else {
+      window.location.hash = newHash;
+    }
+  };
+
+  const openDrawer = (episodes, accent, entityName, totalCount, personName, personRole) => {
+    setDrawer({ episodes, accent: accent || 'var(--accent-theme)', entityName, totalCount, personName, personRole });
+  };
+  const closeDrawer = () => setDrawer(null);
+  const ViewComponent = ALL_VIEWS[view].render;
+
+  // A focus trap alone only stops Tab from reaching backgrounded content - a
+  // screen reader's own browse-mode cursor can still land on it regardless of
+  // tab order. `inert` (native, no polyfill needed in evergreen browsers)
+  // removes background content from both focus and the accessibility tree
+  // while an overlay covers it, same as aria-hidden but also blocking pointer
+  // events on anything the overlay doesn't itself cover. The off-canvas
+  // mobile nav only inerts <main> - the sidebar IS the active panel then, not
+  // background.
+  const mainInert = !!drawer || switcherOpen || mobileNavOpen;
+  const sidebarInert = !!drawer || switcherOpen;
+  const mainRef = React.useRef(null);
+  const sidebarRef = React.useRef(null);
+
+  // React 18's JSX attribute handling doesn't recognize `inert` as a boolean
+  // DOM property the way it does e.g. `disabled` or `hidden` (that lands in
+  // React 19) - setting it as a real property via a ref is what actually
+  // toggles the browser's native inert behavior; aria-hidden is still set
+  // directly as a JSX prop below since that one does pass through correctly.
+  React.useEffect(() => {
+    if (sidebarRef.current) sidebarRef.current.inert = sidebarInert;
+    if (mainRef.current) mainRef.current.inert = mainInert;
+  }, [sidebarInert, mainInert]);
+
+  return (
+    <div className="app">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <button className="mobile-nav-toggle" onClick={() => setMobileNavOpen(o => !o)}
+        aria-expanded={mobileNavOpen} aria-controls="sidebar-nav">
+        <svg viewBox="0 0 18 14" width="18" height="14">
+          <line x1="0" y1="1" x2="18" y2="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line x1="0" y1="7" x2="18" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line x1="0" y1="13" x2="18" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        Menu
+      </button>
+      {mobileNavOpen && <div className="mobile-backdrop" onClick={() => setMobileNavOpen(false)} />}
+      <div className={'sidebar' + (mobileNavOpen ? ' mobile-open' : '')}
+        ref={sidebarRef} aria-hidden={sidebarInert || undefined}>
+        <div className="brand">
+          <button className="brand-kicker" onClick={() => setSwitcherOpen(true)}>
+            {VERTICAL_LABEL}
+            <svg viewBox="0 0 10 6" width="9" height="6">
+              <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          <button className="brand-name" onClick={() => navigate('overview')}>Discourse</button>
+        </div>
+        <nav className="nav-list" id="sidebar-nav" aria-label="Report sections">
+          {Object.keys(VIEWS).map(k => (
+            <button key={k} className={'nav-item' + (view === k ? ' active' : '')}
+              aria-current={view === k ? 'page' : undefined}
+              onClick={() => { navigate(k); setMobileNavOpen(false); }}>
+              {VIEWS[k].label}
+            </button>
+          ))}
+        </nav>
+        <EditionSwitcher />
+        <div className="sidebar-profile">
+          <span className="sidebar-profile-avatar">D</span>
+          <span className="sidebar-profile-name">Demo User</span>
+          <Tooltip label="Open Profile Settings">
+            <button className="sidebar-profile-settings" onClick={() => navigate('settings')}
+              aria-label="Profile settings">
+              <svg viewBox="0 0 16 16" width="18" height="18">
+                {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
+                  <rect key={angle} x="7.25" y="3.1" width="1.5" height="1.9" rx="0.3" fill="currentColor" transform={`rotate(${angle} 8 8)`} />
+                ))}
+                <circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" strokeWidth="1.3" />
+                <circle cx="8" cy="8" r="1.6" fill="currentColor" />
+              </svg>
+            </button>
+          </Tooltip>
+        </div>
+      </div>
+      <main className="main" id="main-content" ref={mainRef} aria-hidden={mainInert || undefined}>
+        <ViewComponent openDrawer={openDrawer} navigate={navigate} highlight={highlight} />
+      </main>
+      <Drawer
+        episodeTitles={drawer ? drawer.episodes : null}
+        accent={drawer ? drawer.accent : 'var(--accent-theme)'}
+        entityName={drawer ? drawer.entityName : null}
+        totalCount={drawer ? drawer.totalCount : null}
+        personName={drawer ? drawer.personName : null}
+        personRole={drawer ? drawer.personRole : null}
+        onClose={closeDrawer}
+      />
+      <ReportSwitcherModal open={switcherOpen} onClose={() => setSwitcherOpen(false)} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
