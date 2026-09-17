@@ -48,6 +48,26 @@
 
   .app { display: flex; min-height: 100vh; }
 
+  .squad-banner {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 6px 10px; width: 100%; padding: 12px 48px; text-align: center;
+    background: #e8bd6a; color: #0b0d12; font-family: var(--sans);
+    font-size: 13px; font-weight: 500;
+  }
+  .squad-banner-brand { font-family: var(--serif); font-weight: 700; }
+  .squad-banner-link {
+    color: #0b0d12; font-weight: 700; text-decoration: none; white-space: nowrap;
+    border-bottom: 1px solid rgba(11,13,18,.5); transition: opacity .15s;
+  }
+  .squad-banner-link:hover { opacity: 0.7; }
+  .squad-banner-close {
+    position: absolute; top: 50%; right: 16px; transform: translateY(-50%);
+    display: flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; padding: 0; background: none; border: none;
+    border-radius: 6px; color: #0b0d12; cursor: pointer; opacity: 0.7; transition: opacity .15s, background .15s;
+  }
+  .squad-banner-close:hover { opacity: 1; background: rgba(11,13,18,.1); }
+
   .mobile-nav-toggle {
     display: none; position: fixed; top: 12px; left: 12px; z-index: 80;
     align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border);
@@ -1455,6 +1475,7 @@ function App() {
   const [drawer, setDrawer] = React.useState(null);
   const [switcherOpen, setSwitcherOpen] = React.useState(false);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+  const [bannerOpen, setBannerOpen] = React.useState(true);
 
   // Closing the off-canvas nav on every route change (not just the explicit
   // nav-item click above) covers navigation that bypasses it too - the brand
@@ -1521,6 +1542,20 @@ function App() {
   }, [sidebarInert, mainInert]);
 
   return (
+    <>
+    {bannerOpen && (
+      <div className="squad-banner">
+        This interactive demo was built with the <span className="squad-banner-brand">Zero-to-One Product Squad</span>
+        <a className="squad-banner-link" href="https://zero-to-one.dreadnought.io/"
+          target="_blank" rel="noreferrer">Meet the squad →</a>
+        <button className="squad-banner-close" onClick={() => setBannerOpen(false)} aria-label="Dismiss banner">
+          <svg viewBox="0 0 12 12" width="12" height="12">
+            <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+    )}
     <div className="app">
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <button className="mobile-nav-toggle" onClick={() => setMobileNavOpen(o => !o)}
@@ -1585,6 +1620,7 @@ function App() {
       />
       <ReportSwitcherModal open={switcherOpen} onClose={() => setSwitcherOpen(false)} />
     </div>
+    </>
   );
 }
 
